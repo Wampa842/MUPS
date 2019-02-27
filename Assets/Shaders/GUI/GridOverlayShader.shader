@@ -2,11 +2,10 @@
 {
 	Properties
 	{
-    	_GridSize("Grid 1 size", float) = 0.5
-		_GridColor("Grid 1 color", Color) = (1, 1, 1, 1)
-		_GridThickness("Grid 1 line thickness", range(0,0.1)) = 0.02
+		_GridColor("Grid color", Color) = (1, 1, 1, 1)
+    	_Grid1Size("Grid 1 size", float) = 0.5
+		_Grid1Thickness("Grid 1 line thickness", range(0,0.1)) = 0.02
 		_Grid2Size("Grid 2 size", float) = 2.5
-		_Grid2Color("Grid 2 color", Color) = (1, 1, 1, 1)
 		_Grid2Thickness("Grid 2 line thickness", range(0,0.1)) = 0.02
       	_Alpha ("Alpha", Range(0,1)) = 1
 		_Threshold ("Alpha threshold", Range(0, 1)) = 0.1
@@ -15,8 +14,6 @@
 	{
 		Tags { "RenderType"="Overlay" }
 		LOD 100
-		ZWrite On
-		ZTest Less
 		Cull Off
 
 		Pass
@@ -29,12 +26,11 @@
 			#pragma fragment frag
 		
 			#include "UnityCG.cginc"
-
-			float _GridSize;
-			float _Grid2Size;
+			
 			float4 _GridColor;
-			float4 _Grid2Color;
-			float _GridThickness;
+			float _Grid1Size;
+			float _Grid2Size;
+			float _Grid1Thickness;
 			float _Grid2Thickness;
 			float _Alpha;
 			float _Threshold;
@@ -77,12 +73,11 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed g1 = DrawGrid(i.uv, _GridSize, _GridThickness);
+				fixed g1 = DrawGrid(i.uv, _Grid1Size, _Grid1Thickness);
 				fixed g2 = DrawGrid(i.uv, _Grid2Size, _Grid2Thickness);
 				fixed a = max(g1, g2) * _Alpha;
 				clip(a - _Threshold);
-				fixed4 rgb = clamp(_GridColor * g1 + _Grid2Color * g2, 0, 1);
-				return float4(rgb.r, rgb.g, rgb.b, a);
+				return float4(_GridColor.r, _GridColor.g, _GridColor.b, 1);
 			}
 			ENDCG
 		}
