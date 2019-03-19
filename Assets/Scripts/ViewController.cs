@@ -3,78 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Crosstales.FB;
+using MUPS.SaveData;
+using MUPS.Scene;
 
 namespace MUPS.UI
 {
-    [System.Serializable]
-    public class KeyboardControls
-    {
-        // View controls
-        public KeyCode SlowerModifier { get; private set; }
-        public KeyCode FasterModifier { get; private set; }
-        public KeyCode AltModifier { get; private set; }
-        public KeyCode Select { get; private set; }
-        public KeyCode RotateCamera { get; private set; }
-        public KeyCode PanCamera { get; private set; }
-
-        // Manipulation controls
-        public KeyCode ToggleLocal { get; set; }
-        public KeyCode ResetCamera { get; set; }
-        public KeyCode LoadCameraState { get; set; }
-        public KeyCode RegisterState { get; set; }
-
-        public KeyboardControls()
-        {
-            SlowerModifier = KeyCode.LeftControl;
-            FasterModifier = KeyCode.LeftShift;
-            AltModifier = KeyCode.LeftAlt;
-            Select = KeyCode.Mouse0;
-            RotateCamera = KeyCode.Mouse1;
-            PanCamera = KeyCode.Mouse2;
-
-            ToggleLocal = KeyCode.G;
-            ResetCamera = KeyCode.R;
-            LoadCameraState = KeyCode.F;
-            RegisterState = KeyCode.Return;
-        }
-
-        // Global access
-        public static KeyboardControls Current { get; set; }
-        static KeyboardControls()
-        {
-            Current = new KeyboardControls();
-        }
-    }
-
-    /// <summary>
-    /// Represents a state of the main camera.
-    /// </summary>
-    [System.Serializable]
-    public class CameraData
-    {
-        public Vector3 Position { get; set; }
-        public Vector4 Rotation { get; set; }
-        public float Roll { get; set; }
-        public float Distance { get; set; }
-        public float FieldOfView { get; set; }
-
-        public CameraData(Vector3 position, Quaternion rotation, float roll, float distance, float fieldOfView)
-        {
-            Position = position;
-            Rotation = new Vector4(rotation.x, rotation.y, rotation.z, rotation.w);
-            Roll = roll;
-            Distance = distance;
-            FieldOfView = fieldOfView;
-        }
-
-        public static CameraData Default { get; private set; }
-        public static CameraData Stored { get; set; }
-        static CameraData()
-        {
-            Default = new CameraData(new Vector3(0, 1, 0), new Quaternion(), 0, -5, 60);
-        }
-    }
-
     public class ViewController : MonoBehaviour
     {
         // Singleton instance
@@ -130,9 +64,14 @@ namespace MUPS.UI
             }
         }
 
+        public void SetCamera(CameraData data)
+        {
+            CameraState = data;
+        }
+
         private void ResetCamera()
         {
-            CameraState = CameraData.Default;
+            CameraState = new CameraData();
         }
 
         public void Awake()
@@ -207,30 +146,54 @@ namespace MUPS.UI
             }
 
             // Handle keyboard controls
-            if (Input.GetKeyDown(KeyboardControls.Current.ResetCamera))
+
+            // Select bone
+            if(Input.GetKeyDown(Settings.Current.Keyboard.Select))
+            {
+                RaycastHit[] hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition));
+                foreach(RaycastHit hit in hits)
+                {
+                    if (hit.collider.gameObject.layer == Layers.Skeleton && Scene.SceneController.Instance.SelectedModel != null && hit.collider.transform.IsChildOf(SceneController.Instance.SelectedModel.transform))
+                    {
+                        SceneController.Instance.SelectedItem = hit.transform;
+                        PmxBone c = SceneController.Instance.SelectedItem.GetComponent<PmxBone>();
+                        c.SetColors();
+                        Logger.Log(c.Name, Logger.LogLevel.Trace);
+                    }
+                }
+            }
+
+            // Reset camera
+            if (Settings.Current.Keyboard.ResetCamera.KeyDown())
             {
                 ResetCamera();
-                Debug.Log("Camera reset");
+                Logger.Log("Camera reset");
             }
 
-            if (Input.GetKeyDown(KeyboardControls.Current.RegisterState))
+            // Store scene state
+            if (Settings.Current.Keyboard.RegisterState.KeyDown())
             {
-                CameraData.Stored = CameraState;
-                Debug.Log("Camera state stored");
+                CameraData cs = CameraState;
+                Debug.Log(SceneData.Stored == null);
+                SceneData.Stored.Camera = cs;
+                Logger.Log("Camera state stored");
             }
 
-            if (Input.GetKeyDown(KeyboardControls.Current.LoadCameraState))
+            // Recall state
+            if (Settings.Current.Keyboard.LoadCameraState.KeyDown())
             {
-                Debug.Log("Camera state loaded");
-                CameraState = CameraData.Stored;
+                Logger.Log("Camera state loaded");
+                CameraState = SceneData.Stored.Camera;
             }
 
-            if (Input.GetKeyDown(KeyboardControls.Current.ToggleLocal))
+            // Cycle local/global/screen coordinate system
+            if (Settings.Current.Keyboard.ToggleLocal.KeyDown())
             {
                 Scene.SceneController.Instance.CycleReferenceSystem();
             }
 
-            if (Input.GetKeyDown(KeyboardControls.Current.Select) && _ctrl)
+            // Select object
+            if (Settings.Current.Keyboard.SelectObject.KeyDown())
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit[] hits = Physics.RaycastAll(ray);
@@ -240,6 +203,14 @@ namespace MUPS.UI
                     if (c != null)
                         Scene.SceneController.Instance.SelectModel(c);
                 }
+            }
+
+            // Save scene
+            if(Settings.Current.Keyboard.Save.KeyDown())
+            {
+                string path = FileBrowser.SaveFile("Save scene", Application.persistentDataPath, "scene", new ExtensionFilter("MUPS Scene Data", "mups"));
+                if (!string.IsNullOrEmpty(path))
+                    SceneData.Export(path);
             }
 
             // Set the gizmo's scale

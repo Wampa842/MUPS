@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -38,13 +38,16 @@ namespace MUPS.Scene
 
         public void AddTestModel()
         {
-            GameObject model = Instantiate<GameObject>(_testModel);
+            //GameObject model = Instantiate<GameObject>(_testModel);
+            GameObject model = Testing.CreateTestModel();
             Color c = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1);
             model.GetComponentInChildren<MeshRenderer>().material.color = c;
             PmxModel comp = model.GetComponent<PmxModel>();
-            comp.DisplayName = model.name = string.Format("Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
+            comp.DisplayName = model.name = string.Format(CultureInfo.InvariantCulture, "Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
             model.transform.SetParent(transform);
             SceneModels.Add(comp);
+            Logger.Log("Added " + comp.DisplayName);
+
             PopulateModelList();
         }
 
@@ -62,14 +65,14 @@ namespace MUPS.Scene
 
             if (model == null)
             {
-                Debug.Log($"Selected camera");
+                Logger.Log($"Selected camera");
                 SelectedModel = null;
                 SelectedItem = null;
                 _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
             }
             else
             {
-                Debug.Log($"Selected {model.DisplayName}");
+                Logger.Log($"Selected {model.DisplayName}");
                 SelectedModel = model;
                 SelectedItem = model.transform;
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
@@ -133,7 +136,7 @@ namespace MUPS.Scene
             Local = !Local;
             string label = Local ? "Local" : "Global";
             ToggleLocalButton.GetComponentInChildren<Text>().text = label;
-            Debug.Log(label);
+            Logger.Log(label);
         }
 
         public void Awake()
@@ -148,11 +151,20 @@ namespace MUPS.Scene
                 Instance = this;
             }
 
+            SaveData.Settings.Load();
+
+            Logger.Log("### NEW SESSION (" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ")");
+
             _modelListButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListButton");
             _testModel = Resources.Load<GameObject>("Prefabs/TestModel");
 
             FindModels();
             SelectModel(null);
+        }
+
+        public void OnApplicationQuit()
+        {
+            SaveData.Settings.Save();
         }
     }
 }

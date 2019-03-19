@@ -17,13 +17,13 @@ TagManager:
   - 
   - 
   - 
+  - SceneGizmos
   - 
   - 
   - 
   - 
-  - 
-  - 
-  - 
+  - Skeleton
+  - BoneSprites
   - 
   - 
   - 

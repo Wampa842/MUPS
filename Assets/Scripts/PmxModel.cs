@@ -32,16 +32,17 @@ namespace MUPS
             }
         }
 
-        public Transform[] RootBones = null;
+        // Visibility
+        private Transform _boneParent;
 
         public bool BonesVisible
         {
             get { return BonesVisible; }
             set
             {
-                foreach (Transform bone in RootBones)
+                for(int i = 0; i < _boneParent.childCount; ++i)
                 {
-                    SetBoneVisible(bone, value);
+                    SetBoneVisible(_boneParent.GetChild(i), value);
                 }
                 BonesVisible = value;
             }
@@ -55,6 +56,11 @@ namespace MUPS
             }
             foreach (Renderer r in bone.GetComponents<Renderer>())
                 r.enabled = visible;
+        }
+
+        private void Awake()
+        {
+            _boneParent = transform.Find("Skeleton");
         }
     }
 }
