@@ -3,7 +3,7 @@
     /// <summary>
     /// An item that has both an English and a Japanese name.
     /// </summary>
-    public abstract class PmxNamedItem
+    public abstract class PmxItem
     {
         /// <summary>
         /// Indicates whether local (Japanese) name should be preferred.
