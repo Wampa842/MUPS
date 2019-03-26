@@ -7,7 +7,8 @@ namespace MUPS
     class PmxBone : MonoBehaviour
     {
         public enum TailType { None, Bone, Vector }
-        public enum BoneType { Disabled, Rotate, Move, Twist, Invisible }
+        [Flags]
+        public enum BoneFlags { Rotation, Translation, Visible }
 
         public static float Radius = 0.1f;
         public static Color NormalColor = new Color(0, 0, 1);
@@ -15,7 +16,8 @@ namespace MUPS
         public static Color ModifiedColor = new Color(0, 1, 0);
 
         public string Name = "Bone";
-        public BoneType Type = BoneType.Rotate;
+        public BoneFlags Type = BoneFlags.Rotation | BoneFlags.Visible;
+        public bool Modified = false;
 
         public SphereCollider Collider = null;
         public Transform SpriteHolder = null;
@@ -25,12 +27,17 @@ namespace MUPS
         public Transform TailBone = null;
         public Vector3 TailPosition = new Vector3();
 
-        public void SetColors()
+        public static void ResetColors()
         {
             foreach (PmxBone bone in Resources.FindObjectsOfTypeAll<PmxBone>())
             {
-                bone.Color = PmxBone.NormalColor;
+                bone.Color = bone.Modified ? ModifiedColor : NormalColor;
             }
+        }
+
+        public void SetColors()
+        {
+            ResetColors();
             Color = SelectedColor;
         }
 
@@ -43,18 +50,20 @@ namespace MUPS
             set
             {
                 SpriteHolder.GetComponent<SpriteRenderer>().color = value;
-                TailHolder.GetComponent<MeshRenderer>().material.color = new Color(value.r, value.g, value.b, 0.5f);
+                TailHolder.GetComponent<MeshRenderer>().sharedMaterial.color = new Color(value.r, value.g, value.b, 0.5f);
             }
         }
 
         void Awake()
         {
-
+            Renderer r = TailHolder.GetComponent<Renderer>();
+            r.material = new Material(r.material);
         }
 
         void Start()
         {
             TailHolder.GetComponent<Renderer>().enabled = Tail != TailType.None;
+            ResetColors();
         }
 
         void Update()

@@ -26,6 +26,7 @@ namespace MUPS.Scene
         public List<PmxModel> SceneModels = null;
         public PmxModel SelectedModel = null;
         public Transform SelectedItem = null;
+        public PmxBone SelectedBone = null;
         public Button ToggleLocalButton = null;
 
         public void FindModels()
@@ -49,6 +50,7 @@ namespace MUPS.Scene
             Logger.Log("Added " + comp.DisplayName);
 
             PopulateModelList();
+            SelectModel(comp);
         }
 
         public void AddModel()

@@ -180,7 +180,7 @@ namespace MUPS.SaveData
             PanCamera = KeyCode.Mouse2;
 
             SelectObject = new KeyBinding(KeyCode.Mouse0, KeyCode.LeftControl);
-            ToggleLocal = new KeyBinding(KeyCode.L, KeyCode.LeftControl);
+            ToggleLocal = new KeyBinding(KeyCode.G);
             ResetCamera = new KeyBinding(KeyCode.R, KeyCode.LeftControl, KeyCode.RightControl);
             LoadCameraState = new KeyBinding(KeyCode.R, KeyCode.LeftShift, KeyCode.RightShift);
             RegisterState = new KeyBinding(KeyCode.Return);
@@ -201,7 +201,7 @@ namespace MUPS.SaveData
         public ViewProperties()
         {
             BoneSize = 0.05f;
-            BoneTailSize = 0.05f;
+            BoneTailSize = 0.03f;
         }
     }
 
