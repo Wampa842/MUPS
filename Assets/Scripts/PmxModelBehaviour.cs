@@ -8,7 +8,7 @@ namespace MUPS
     /// <summary>
     /// Represents the root element of a PMX model.
     /// </summary>
-    class PmxModel : MonoBehaviour
+    class PmxModelBehaviour : MonoBehaviour
     {
         public static bool PreferJapaneseText = false;
 
@@ -31,6 +31,8 @@ namespace MUPS
                 NameEnglish = NameJapanese = value;
             }
         }
+        public string DescriptionEnglish = "Empty description (English)";
+        public string DescriptionJapanese = "Empty description (Japanese)";
 
         // Visibility
         private Transform _boneParent;

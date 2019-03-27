@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Bone0
+  Type: 2
+  Modified: 0
   Collider: {fileID: 1916106834531274286}
   SpriteHolder: {fileID: 1916106836240023356}
   TailHolder: {fileID: 1916106835874888428}
@@ -123,7 +125,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: cc115b62cbcfed04f8fa390896556257, type: 2}
+  - {fileID: 2100000, guid: 056676b12f643da41aac49c1b8a41471, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -212,7 +214,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 32c58cc1fb13f2241a9b579b99c538e9, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

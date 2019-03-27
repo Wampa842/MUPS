@@ -77,5 +77,10 @@ namespace PmxSharp
             }
             return list.ToArray();
         }
+
+        public override string ToString()
+        {
+            return string.Format("triangle ({0}, {1}, {2})", _vertices[0], _vertices[1], _vertices[2]);
+        }
     }
 }

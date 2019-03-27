@@ -10,7 +10,7 @@ namespace MUPS
         {
             // Create container objects
             GameObject root = new GameObject("Skinned Mesh Test");
-            PmxModel c = root.AddComponent<PmxModel>();
+            PmxModelBehaviour c = root.AddComponent<PmxModelBehaviour>();
             c.DisplayName = "Skinned Mesh Test";
             GameObject mp = new GameObject("Model");
             mp.transform.SetParent(root.transform);
@@ -98,14 +98,14 @@ namespace MUPS
 
             // Set up bone components
 
-            PmxBone c0 = b0.GetComponent<PmxBone>();
-            PmxBone c1 = b1.GetComponent<PmxBone>();
-            PmxBone c2 = b2.GetComponent<PmxBone>();
-            c0.Tail = PmxBone.TailType.Bone;
+            PmxBoneBehaviour c0 = b0.GetComponent<PmxBoneBehaviour>();
+            PmxBoneBehaviour c1 = b1.GetComponent<PmxBoneBehaviour>();
+            PmxBoneBehaviour c2 = b2.GetComponent<PmxBoneBehaviour>();
+            c0.Tail = PmxBoneBehaviour.TailType.Bone;
             c0.TailBone = b1;
-            c1.Tail = PmxBone.TailType.Bone;
+            c1.Tail = PmxBoneBehaviour.TailType.Bone;
             c1.TailBone = b2;
-            c2.Tail = PmxBone.TailType.Vector;
+            c2.Tail = PmxBoneBehaviour.TailType.Vector;
             c2.TailPosition = new Vector3(0, 0.5f, 0);
 
             // Set up skinned mesh

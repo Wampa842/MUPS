@@ -4,7 +4,7 @@ using MUPS.SaveData;
 
 namespace MUPS
 {
-    class PmxBone : MonoBehaviour
+    class PmxBoneBehaviour : MonoBehaviour
     {
         public enum TailType { None, Bone, Vector }
         [Flags]
@@ -29,7 +29,7 @@ namespace MUPS
 
         public static void ResetColors()
         {
-            foreach (PmxBone bone in Resources.FindObjectsOfTypeAll<PmxBone>())
+            foreach (PmxBoneBehaviour bone in Resources.FindObjectsOfTypeAll<PmxBoneBehaviour>())
             {
                 bone.Color = bone.Modified ? ModifiedColor : NormalColor;
             }
@@ -53,6 +53,24 @@ namespace MUPS
                 TailHolder.GetComponent<MeshRenderer>().sharedMaterial.color = new Color(value.r, value.g, value.b, 0.5f);
             }
         }
+
+        #region Interactivity
+        private bool _interactive = true;
+        public bool Interactive
+        {
+            get
+            {
+                return _interactive;
+            }
+            set
+            {
+                _interactive = value;
+                Collider.enabled = value;
+                SpriteHolder.GetComponent<Renderer>().enabled = value;
+                TailHolder.GetComponent<Renderer>().enabled = value;
+            }
+        }
+        #endregion
 
         void Awake()
         {

@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 683681575179501923}
-  - component: {fileID: 683681575179501922}
+  - component: {fileID: 4346952262099840236}
   m_Layer: 0
   m_Name: TestModel
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &683681575179501922
+--- !u!114 &4346952262099840236
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,12 +41,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 683681575179501920}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8faf06f13372a3489edddfd352930e9, type: 3}
+  m_Script: {fileID: 11500000, guid: 4373d798cd249d94a968f3f26b7c95d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NameEnglish: Cube (en)
-  NameJapanese: Cube (jp)
-  RootBones: []
+  ListButton: {fileID: 0}
+  Ignore: 0
+  NameEnglish: Cube
+  NameJapanese: cuuuube
 --- !u!1 &683681575902547140
 GameObject:
   m_ObjectHideFlags: 0

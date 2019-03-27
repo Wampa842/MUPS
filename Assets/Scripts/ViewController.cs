@@ -156,7 +156,7 @@ namespace MUPS.UI
                     if (hit.collider.gameObject.layer == Layers.Skeleton && Scene.SceneController.Instance.SelectedModel != null && hit.collider.transform.IsChildOf(SceneController.Instance.SelectedModel.transform))
                     {
                         //SceneController.Instance.SelectedItem = hit.transform;
-                        SceneController.Instance.SelectedBone = hit.transform.GetComponent<PmxBone>();
+                        SceneController.Instance.SelectedBone = hit.transform.GetComponent<PmxBoneBehaviour>();
                         SceneController.Instance.SelectedBone.SetColors();
                         Logger.Log(string.Format("Selected bone {0}", SceneController.Instance.SelectedBone.Name), Logger.LogLevel.Trace);
                     }
@@ -199,7 +199,7 @@ namespace MUPS.UI
                 RaycastHit[] hits = Physics.RaycastAll(ray);
                 for (int i = 0; i < hits.Length; ++i)
                 {
-                    PmxModel c = hits[i].transform.GetComponentInParent<PmxModel>();
+                    PmxModelBehaviour c = hits[i].transform.GetComponentInParent<PmxModelBehaviour>();
                     if (c != null)
                         Scene.SceneController.Instance.SelectModel(c);
                 }

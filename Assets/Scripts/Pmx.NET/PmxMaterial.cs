@@ -42,6 +42,14 @@ namespace PmxSharp
         public int ToonReference { get; set; }
         public string Note { get; set; }
         public int SurfaceCount { get; set; }
+
+        /// <summary>
+        /// Returns true if any of the specified flag bits are set.
+        /// </summary>
+        public bool HasFlag(PmxMaterialFlags flag)
+        {
+            return (Flags & flag) != 0;
+        }
         #endregion
         #region Surfaces
 
@@ -61,5 +69,14 @@ namespace PmxSharp
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("Material {0}\n", Name)
+                .AppendFormat("Color {0}\n", Diffuse)
+                .AppendFormat("Surfaces {0}\n", SurfaceCount);
+            return sb.ToString();
+        }
     }
 }

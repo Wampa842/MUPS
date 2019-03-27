@@ -306,7 +306,7 @@ namespace MUPS.SaveData
         // Load settings from the config file
         public static void Load()
         {
-            Import("aaaa");
+            Import(SettingsFile);
         }
     }
 }

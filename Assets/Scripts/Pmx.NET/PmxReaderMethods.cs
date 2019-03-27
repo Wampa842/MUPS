@@ -47,6 +47,32 @@ namespace PmxSharp
         }
         #endregion
         #region Index
+        public static int ReadIndex(this BinaryReader reader, PmxIndexType type)
+        {
+            // Vertex types are byte, ushort, int.
+            if(type == PmxIndexType.Vertex)
+            {
+                switch (PmxIndex.IndexSize(type))
+                {
+                    case 1: return reader.ReadByte();
+                    case 2: return reader.ReadUInt16();
+                    case 4: return reader.ReadInt32();
+                    default: throw new NotSupportedException("Only integers of up to 4 bytes are supported.");
+                }
+            }
+            // Other types are sbyte, short, int.
+            else
+            {
+                switch (PmxIndex.IndexSize(type))
+                {
+                    case 1: return reader.ReadSByte();
+                    case 2: return reader.ReadInt16();
+                    case 4: return reader.ReadInt32();
+                    default: throw new NotSupportedException("Only integers of up to 4 bytes are supported.");
+                }
+            }
+        }
+
         public static int ReadIndex(this BinaryReader reader, int length, bool signed = true)
         {
             switch(length)
