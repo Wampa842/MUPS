@@ -8,7 +8,7 @@ namespace MUPS
     {
         public enum TailType { None, Bone, Vector }
         [Flags]
-        public enum BoneFlags { Rotation, Translation, Visible }
+        public enum BoneFlags { Rotation = 1, Translation = 2, Visible = 4 }
 
         public static float Radius = 0.1f;
         public static Color NormalColor = new Color(0, 0, 1);
@@ -16,7 +16,7 @@ namespace MUPS
         public static Color ModifiedColor = new Color(0, 1, 0);
 
         public string Name = "Bone";
-        public BoneFlags Type = BoneFlags.Rotation | BoneFlags.Visible;
+        public BoneFlags Type { get; set; } = BoneFlags.Rotation | BoneFlags.Visible;
         public bool Modified = false;
 
         public SphereCollider Collider = null;
@@ -64,10 +64,10 @@ namespace MUPS
             }
             set
             {
-                _interactive = value;
-                Collider.enabled = value;
-                SpriteHolder.GetComponent<Renderer>().enabled = value;
-                TailHolder.GetComponent<Renderer>().enabled = value;
+                _interactive = value && ((this.Type & BoneFlags.Visible) != 0);
+                Collider.enabled = _interactive;
+                SpriteHolder.GetComponent<Renderer>().enabled = _interactive;
+                TailHolder.GetComponent<Renderer>().enabled = _interactive && (Tail != TailType.None);
             }
         }
         #endregion
@@ -89,7 +89,9 @@ namespace MUPS
             float dist = Camera.main.transform.InverseTransformPoint(transform.position).z;
             float r = SaveData.Settings.Current.View.BoneSize * dist;
             Collider.radius = r / 2.0f;
-            SpriteHolder.LookAt(Camera.main.transform.position);
+            //SpriteHolder.LookAt(Camera.main.transform.position);
+            SpriteHolder.rotation = Camera.main.transform.rotation;
+            SpriteHolder.Rotate(0, 180, 0, Space.Self);
             SpriteHolder.localScale = new Vector3(r, r, r);
 
             switch (Tail)

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace MUPS.UI
@@ -15,7 +16,10 @@ namespace MUPS.UI
             switch (type)
             {
                 case 1:
-                    System.Diagnostics.Process.Start($"\"{Application.persistentDataPath}\"");
+                    Process.Start('"' + Application.persistentDataPath + '"');
+                    break;
+                case 2:
+                    Process.Start('"' + Path.GetDirectoryName(Scene.SceneController.Instance.SelectedModel.FilePath) + '"');
                     break;
                 default:
                     break;

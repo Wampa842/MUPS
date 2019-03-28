@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using UnityEngine;
 
 namespace PmxSharp
@@ -41,7 +42,6 @@ namespace PmxSharp
         public PmxToonType ToonType { get; set; }
         public int ToonReference { get; set; }
         public string Note { get; set; }
-        public int SurfaceCount { get; set; }
 
         /// <summary>
         /// Returns true if any of the specified flag bits are set.
@@ -52,6 +52,17 @@ namespace PmxSharp
         }
         #endregion
         #region Surfaces
+
+        public int VertexCount { get; set; }
+        public int FirstVertex { get; set; }
+        public int LastVertex { get { return FirstVertex + VertexCount - 1; } }
+        public int TriangleCount { get { return VertexCount / 3; } }
+        public int FirstTriangle { get { return FirstVertex / 3; } }
+        public int LastTriangle { get { return FirstTriangle + TriangleCount - 1; } }
+        public PmxSurface[] GetSurfaces(PmxSurface[] coll)
+        {
+            return coll.Skip(FirstTriangle).Take(TriangleCount).ToArray();
+        }
 
         #endregion
         #region Directives
@@ -75,7 +86,7 @@ namespace PmxSharp
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("Material {0}\n", Name)
                 .AppendFormat("Color {0}\n", Diffuse)
-                .AppendFormat("Surfaces {0}\n", SurfaceCount);
+                .AppendFormat("Vertices {0}\n", VertexCount);
             return sb.ToString();
         }
     }

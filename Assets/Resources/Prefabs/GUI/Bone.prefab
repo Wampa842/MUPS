@@ -47,7 +47,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Name: Bone0
-  Type: 2
   Modified: 0
   Collider: {fileID: 1916106834531274286}
   SpriteHolder: {fileID: 1916106836240023356}

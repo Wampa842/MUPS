@@ -197,11 +197,15 @@ namespace MUPS.SaveData
     {
         public float BoneSize { get; set; }
         public float BoneTailSize { get; set; }
+        public float BoneOpacity { get; set; }
+        public float BoneTailOpacity { get; set; }
 
         public ViewProperties()
         {
             BoneSize = 0.05f;
             BoneTailSize = 0.03f;
+            BoneOpacity = 0.7f;
+            BoneTailOpacity = 0.4f;
         }
     }
 
@@ -216,6 +220,7 @@ namespace MUPS.SaveData
         }
     }
 
+    [Serializable]
     class Settings
     {
         public KeyboardControls Keyboard { get; set; }

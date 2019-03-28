@@ -15,6 +15,7 @@ namespace MUPS
         // UI
         public Button ListButton = null;
         public bool Ignore = false;
+        public string FilePath = "";
         public string NameEnglish = "none";
         public string NameJapanese = "none";
         public string DisplayName
@@ -34,35 +35,27 @@ namespace MUPS
         public string DescriptionEnglish = "Empty description (English)";
         public string DescriptionJapanese = "Empty description (Japanese)";
 
-        // Visibility
-        private Transform _boneParent;
+        public Transform SkeletonRoot;
+        public Transform MeshRoot;
 
-        public bool BonesVisible
+        public void SetBonesVisible(bool visible)
         {
-            get { return BonesVisible; }
-            set
-            {
-                for(int i = 0; i < _boneParent.childCount; ++i)
-                {
-                    SetBoneVisible(_boneParent.GetChild(i), value);
-                }
-                BonesVisible = value;
-            }
+            //TraverseBones(SkeletonRoot, (t, b) => { /*b.Interactive = visible;*/ Debug.Log(b.transform.name); });
+            foreach (PmxBoneBehaviour bone in GetComponentsInChildren<PmxBoneBehaviour>())
+                bone.Interactive = visible;
         }
 
-        private static void SetBoneVisible(Transform bone, bool visible)
+        public void TraverseBones(Transform bone, Action<Transform, PmxBoneBehaviour> action)
         {
+            PmxBoneBehaviour comp = bone.GetComponent<PmxBoneBehaviour>();
+            if (comp != null)
+                action.Invoke(bone, comp);
+
             for (int i = 0; i < bone.childCount; ++i)
             {
-                SetBoneVisible(bone.GetChild(i), visible);
+                Transform child = bone.GetChild(i);
+                TraverseBones(child, action);
             }
-            foreach (Renderer r in bone.GetComponents<Renderer>())
-                r.enabled = visible;
-        }
-
-        private void Awake()
-        {
-            _boneParent = transform.Find("Skeleton");
         }
     }
 }

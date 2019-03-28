@@ -79,6 +79,11 @@ namespace MUPS.Scene
                 b.transform.Find("SelectedIcon").GetComponent<Text>().enabled = false;
             }
 
+            foreach(PmxModelBehaviour comp in SceneModels)
+            {
+                comp.SetBonesVisible(false);
+            }
+
             if (model == null)
             {
                 Logger.Log($"Selected camera");
@@ -92,6 +97,8 @@ namespace MUPS.Scene
                 SelectedModel = model;
                 SelectedItem = model.transform;
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
+                SelectedModel.SetBonesVisible(true);
+
             }
         }
 

@@ -91,7 +91,7 @@ namespace PmxSharp
                 // Standard properties
                 vert.Position = reader.ReadVector3();
                 vert.Normal = reader.ReadVector3();
-                vert.UV = reader.ReadVector2();
+                vert.UV = reader.ReadVector2() * new Vector2(1, -1);
 
                 // Additional UVs
                 vert.AdditionalUVs = new UnityEngine.Vector4[_model.AdditionalUVCount];
@@ -181,6 +181,7 @@ namespace PmxSharp
 
             #region Material data
             _model.Materials = new PmxMaterial[reader.ReadInt32()];
+            int assignedVertexCount = 0;
             for (int i = 0; i < _model.Materials.Length; ++i)
             {
                 PmxMaterial mat = new PmxMaterial();
@@ -200,8 +201,10 @@ namespace PmxSharp
                 mat.ToonType = (PmxToonType)reader.ReadByte();
                 mat.ToonReference = mat.ToonType == PmxToonType.Texture ? reader.ReadIndex(PmxIndex.Texture) : reader.ReadByte();
                 mat.Note = reader.ReadPmxString(_textEncoding);
-                mat.SurfaceCount = reader.ReadInt32();
+                mat.VertexCount = reader.ReadInt32();
+                mat.FirstVertex = assignedVertexCount;
 
+                assignedVertexCount += mat.VertexCount;
                 _model.Materials[i] = mat;
                 //Debug.Log(mat);
             }

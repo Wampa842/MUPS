@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PmxSharp
@@ -187,6 +189,56 @@ namespace PmxSharp
             AdditionalUVs = new Vector4[0];
             Deform = new Bdef1Deform(-1);
             EdgeSize = 1.0f;
+        }
+
+        public static Vector3[] GetPositions(IEnumerable<PmxVertex> coll)
+        {
+            List<Vector3> list = new List<Vector3>();
+            foreach (var v in coll)
+            {
+                list.Add(v.Position);
+            }
+            return list.ToArray();
+        }
+
+        public static Vector2[] GetUVs(IEnumerable<PmxVertex> coll)
+        {
+            List<Vector2> list = new List<Vector2>();
+            foreach (var v in coll)
+            {
+                list.Add(v.UV);
+            }
+            return list.ToArray();
+        }
+
+        public static Vector3[] GetNormals(IEnumerable<PmxVertex> coll)
+        {
+            List<Vector3> list = new List<Vector3>();
+            foreach (var v in coll)
+            {
+                list.Add(v.Normal);
+            }
+            return list.ToArray();
+        }
+
+        public static IPmxDeform[] GetDeforms(IEnumerable<PmxVertex> coll)
+        {
+            List<IPmxDeform> list = new List<IPmxDeform>();
+            foreach(var v in coll)
+            {
+                list.Add(v.Deform);
+            }
+            return list.ToArray();
+        }
+
+        public static BoneWeight[] GetBoneWeights(IEnumerable<IPmxDeform> coll)
+        {
+            List<BoneWeight> list = new List<BoneWeight>();
+            foreach (var def in coll)
+            {
+                list.Add(def.GetBoneWeight());
+            }
+            return list.ToArray();
         }
     }
 }
