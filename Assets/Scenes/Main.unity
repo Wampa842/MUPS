@@ -534,6 +534,10 @@ MonoBehaviour:
   GeometryCamera: {fileID: 785564051}
   GUICamera: {fileID: 1099815571}
   ScreenshotCamera: {fileID: 1185196549}
+  RotateBoneSprite: {fileID: 21300000, guid: 32c58cc1fb13f2241a9b579b99c538e9, type: 3}
+  TranslateBoneSprite: {fileID: 21300000, guid: 1cd966841222b1946a3d40eeabba4b80,
+    type: 3}
+  TwistBoneSprite: {fileID: 21300000, guid: afc747a43c3d9a74e9a7a3ab5661ac4f, type: 3}
 --- !u!114 &112818572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -722,7 +726,6 @@ MonoBehaviour:
   Local: 0
   SceneModels: []
   SelectedModel: {fileID: 0}
-  SelectedItem: {fileID: 0}
   SelectedBone: {fileID: 0}
   ToggleLocalButton: {fileID: 704154165}
 --- !u!1 &466246131
@@ -4100,7 +4103,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 294.3, y: -12.25}
+  m_AnchoredPosition: {x: 287.68, y: -12.25}
   m_SizeDelta: {x: 180.25, y: 20.1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2039412275

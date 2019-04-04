@@ -19,7 +19,7 @@ namespace MUPS.UI
                     Process.Start('"' + Application.persistentDataPath + '"');
                     break;
                 case 2:
-                    Process.Start('"' + Path.GetDirectoryName(Scene.SceneController.Instance.SelectedModel.FilePath) + '"');
+                    Process.Start('"' + Path.GetDirectoryName(SceneController.Instance.SelectedModel.FilePath) + '"');
                     break;
                 default:
                     break;

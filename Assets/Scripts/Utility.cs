@@ -12,6 +12,8 @@ namespace MUPS
     public static class Layers
     {
         public static int Skeleton { get { return 17; } }
+        public static int Gizmos { get { return 12; } }
+        public static int BoneSprites { get { return 18; } }
     }
 
     public class Logger

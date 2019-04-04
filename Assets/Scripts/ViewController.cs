@@ -5,9 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Crosstales.FB;
 using MUPS.SaveData;
-using MUPS.Scene;
 
-namespace MUPS.UI
+namespace MUPS
 {
     public class ViewController : MonoBehaviour
     {
@@ -22,6 +21,9 @@ namespace MUPS.UI
         public Camera GeometryCamera;       // Main geometry camera
         public Camera GUICamera;            // Camera that renders the user interface
         public Camera ScreenshotCamera;     // Camera for saving screenshots
+        public Sprite RotateBoneSprite;     // Circular bone sprite
+        public Sprite TranslateBoneSprite;  // Square bone sprite
+        public Sprite TwistBoneSprite;      // X bone sprite
 
         // Inputs
         private bool _active;               // Control is active
@@ -153,12 +155,9 @@ namespace MUPS.UI
                 RaycastHit[] hits = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition));
                 foreach(RaycastHit hit in hits)
                 {
-                    if (hit.collider.gameObject.layer == Layers.Skeleton && Scene.SceneController.Instance.SelectedModel != null && hit.collider.transform.IsChildOf(SceneController.Instance.SelectedModel.transform))
+                    if (hit.collider.gameObject.layer == Layers.Skeleton && SceneController.Instance.SelectedModel != null && hit.collider.transform.IsChildOf(SceneController.Instance.SelectedModel.transform))
                     {
-                        //SceneController.Instance.SelectedItem = hit.transform;
-                        SceneController.Instance.SelectedBone = hit.transform.GetComponent<PmxBoneBehaviour>();
-                        SceneController.Instance.SelectedBone.SetColors();
-                        Logger.Log(string.Format("Selected bone {0}", SceneController.Instance.SelectedBone.Name), Logger.LogLevel.Trace);
+                        SceneController.Instance.SelectBone(hit.transform.GetComponent<PmxBoneBehaviour>());
                     }
                 }
             }
@@ -189,7 +188,7 @@ namespace MUPS.UI
             // Cycle local/global/screen coordinate system
             if (Settings.Current.Keyboard.ToggleLocal.KeyDown())
             {
-                Scene.SceneController.Instance.CycleReferenceSystem();
+                SceneController.Instance.CycleReferenceSystem();
             }
 
             // Select object
@@ -201,7 +200,7 @@ namespace MUPS.UI
                 {
                     PmxModelBehaviour c = hits[i].transform.GetComponentInParent<PmxModelBehaviour>();
                     if (c != null)
-                        Scene.SceneController.Instance.SelectModel(c);
+                        SceneController.Instance.SelectModel(c);
                 }
             }
 

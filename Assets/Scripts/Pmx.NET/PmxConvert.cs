@@ -32,7 +32,7 @@ namespace PmxSharp
             PmxModelBehaviour component = root.AddComponent<PmxModelBehaviour>();
 
             component.NameEnglish = model.NameEnglish;
-            component.NameJapanese = model.NameJapanese;
+            component.FileName = model.NameJapanese;
             component.DescriptionEnglish = model.DescriptionEnglish;
             component.DescriptionJapanese = model.DescriptionJapanese;
             component.FilePath = model.FilePath;
@@ -56,7 +56,7 @@ namespace PmxSharp
                 bone.name = original.Name;
                 t.position = original.Position;
                 c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
-                
+
                 c.Tail = original.HasFlag(PmxBoneFlags.TailIsIndex) ? PmxBoneBehaviour.TailType.Bone : PmxBoneBehaviour.TailType.Vector;
                 if ((c.Tail == PmxBoneBehaviour.TailType.Vector && original.TailPosition.magnitude <= 0) || (c.Tail == PmxBoneBehaviour.TailType.Bone && original.TailIndex < 0))
                 {
@@ -65,6 +65,16 @@ namespace PmxSharp
 
                 if (c.Tail == PmxBoneBehaviour.TailType.Vector)
                     c.TailPosition = original.TailPosition;
+
+                c.Flags = 0;
+                if (original.HasFlag(PmxBoneFlags.Translation))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Translation;
+                if (original.HasFlag(PmxBoneFlags.Visible))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Visible;
+                if (original.HasFlag(PmxBoneFlags.FixedAxis))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Twist;
+
+                c.UpdateSprite();
 
                 bones[i] = bone.transform;
             }
@@ -146,7 +156,7 @@ namespace PmxSharp
                 o.transform.SetParent(meshRoot);
             }*/
 
-            for(int i = 0; i < meshes.Length; ++i)
+            for (int i = 0; i < meshes.Length; ++i)
             {
                 Mesh mesh = meshes[i];
                 GameObject o = new GameObject(mesh.name);
@@ -154,12 +164,12 @@ namespace PmxSharp
                 mf.sharedMesh = mesh;
                 SkinnedMeshRenderer smr = o.AddComponent<SkinnedMeshRenderer>();
                 smr.sharedMesh = mesh;
-                
+
                 smr.rootBone = o.transform;
                 smr.bones = bones;
 
                 List<Matrix4x4> bp = new List<Matrix4x4>();
-                foreach(Transform bone in bones)
+                foreach (Transform bone in bones)
                 {
                     bp.Add(bone.worldToLocalMatrix);
                 }

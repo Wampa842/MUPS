@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using MUPS.Scene;
 
 namespace MUPS.UI
 {
@@ -11,29 +10,33 @@ namespace MUPS.UI
         {
             float delta = Input.GetAxis("Vertical") * ViewController.Instance.MovementMultiplier * 0.5f;
             Space space = SceneController.Instance.Local ? Space.Self : Space.World;
+            PmxBoneBehaviour bone = SceneController.Instance.SelectedBone;
 
-            if (SceneController.Instance.SelectedBone != null)
+            if (bone != null)
             {
                 // Move selected object
                 switch (mode)
                 {
                     case 0:
-                        SceneController.Instance.SelectedBone.transform.Translate(delta * 0.05f, 0, 0, space);
+                        if (bone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation))
+                            bone.transform.Translate(delta * 0.05f, 0, 0, space);
                         break;
                     case 1:
-                        SceneController.Instance.SelectedBone.transform.Translate(0, delta * 0.05f, 0, space);
+                        if (bone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation))
+                            bone.transform.Translate(0, delta * 0.05f, 0, space);
                         break;
                     case 2:
-                        SceneController.Instance.SelectedBone.transform.Translate(0, 0, delta * 0.05f, space);
+                        if (bone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation))
+                            bone.transform.Translate(0, 0, delta * 0.05f, space);
                         break;
                     case 3:
-                        SceneController.Instance.SelectedBone.transform.Rotate(delta, 0, 0, space);
+                        bone.transform.Rotate(delta, 0, 0, space);
                         break;
                     case 4:
-                        SceneController.Instance.SelectedBone.transform.Rotate(0, delta, 0, space);
+                        bone.transform.Rotate(0, delta, 0, space);
                         break;
                     case 5:
-                        SceneController.Instance.SelectedBone.transform.Rotate(0, 0, delta, space);
+                        bone.transform.Rotate(0, 0, delta, space);
                         break;
                     default:
                         break;

@@ -8,7 +8,7 @@ namespace MUPS
     /// <summary>
     /// Represents the root element of a PMX model.
     /// </summary>
-    class PmxModelBehaviour : MonoBehaviour
+    public class PmxModelBehaviour : MonoBehaviour
     {
         public static bool PreferJapaneseText = false;
 
@@ -17,19 +17,19 @@ namespace MUPS
         public bool Ignore = false;
         public string FilePath = "";
         public string NameEnglish = "none";
-        public string NameJapanese = "none";
+        public string FileName = "none";
         public string DisplayName
         {
             get
             {
                 if (PreferJapaneseText)
-                    return string.IsNullOrEmpty(NameJapanese) ? NameEnglish : NameJapanese;
+                    return string.IsNullOrEmpty(FileName) ? NameEnglish : FileName;
                 else
-                    return string.IsNullOrEmpty(NameEnglish) ? NameJapanese : NameEnglish;
+                    return string.IsNullOrEmpty(NameEnglish) ? FileName : NameEnglish;
             }
             set
             {
-                NameEnglish = NameJapanese = value;
+                NameEnglish = FileName = value;
             }
         }
         public string DescriptionEnglish = "Empty description (English)";
@@ -37,24 +37,19 @@ namespace MUPS
 
         public Transform SkeletonRoot;
         public Transform MeshRoot;
+        public PmxBoneBehaviour LastSelectedBone;
 
-        public void SetBonesVisible(bool visible)
+        public void SetBonesInteractive(bool interactive)
         {
-            //TraverseBones(SkeletonRoot, (t, b) => { /*b.Interactive = visible;*/ Debug.Log(b.transform.name); });
             foreach (PmxBoneBehaviour bone in GetComponentsInChildren<PmxBoneBehaviour>())
-                bone.Interactive = visible;
+                bone.Interactive = interactive;
         }
 
         public void TraverseBones(Transform bone, Action<Transform, PmxBoneBehaviour> action)
         {
-            PmxBoneBehaviour comp = bone.GetComponent<PmxBoneBehaviour>();
-            if (comp != null)
-                action.Invoke(bone, comp);
-
-            for (int i = 0; i < bone.childCount; ++i)
+            foreach(PmxBoneBehaviour b in GetComponentsInChildren<PmxBoneBehaviour>())
             {
-                Transform child = bone.GetChild(i);
-                TraverseBones(child, action);
+                action.Invoke(b.transform, b);
             }
         }
     }

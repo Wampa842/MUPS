@@ -4,11 +4,11 @@ using MUPS.SaveData;
 
 namespace MUPS
 {
-    class PmxBoneBehaviour : MonoBehaviour
+    public class PmxBoneBehaviour : MonoBehaviour
     {
         public enum TailType { None, Bone, Vector }
         [Flags]
-        public enum BoneFlags { Rotation = 1, Translation = 2, Visible = 4 }
+        public enum BoneFlags { Rotation = 1, Translation = 2, Visible = 4, Twist = 8 }
 
         public static float Radius = 0.1f;
         public static Color NormalColor = new Color(0, 0, 1);
@@ -16,7 +16,7 @@ namespace MUPS
         public static Color ModifiedColor = new Color(0, 1, 0);
 
         public string Name = "Bone";
-        public BoneFlags Type { get; set; } = BoneFlags.Rotation | BoneFlags.Visible;
+        public BoneFlags Flags { get; set; } = BoneFlags.Rotation | BoneFlags.Visible;
         public bool Modified = false;
 
         public SphereCollider Collider = null;
@@ -54,6 +54,29 @@ namespace MUPS
             }
         }
 
+        public void SetSprite(Sprite sprite)
+        {
+            SpriteHolder.GetComponent<SpriteRenderer>().sprite = sprite;
+        }
+
+        public void UpdateSprite()
+        {
+            if (!HasFlag(BoneFlags.Visible))
+                return;
+            if (HasFlag(BoneFlags.Twist))
+            {
+                SetSprite(ViewController.Instance.TwistBoneSprite);
+            }
+            else if(HasFlag(BoneFlags.Translation))
+            {
+                SetSprite(ViewController.Instance.TranslateBoneSprite);
+            }
+            else
+            {
+                SetSprite(ViewController.Instance.RotateBoneSprite);
+            }
+        }
+
         #region Interactivity
         private bool _interactive = true;
         public bool Interactive
@@ -64,11 +87,16 @@ namespace MUPS
             }
             set
             {
-                _interactive = value && ((this.Type & BoneFlags.Visible) != 0);
+                _interactive = value && HasFlag(BoneFlags.Visible);
                 Collider.enabled = _interactive;
                 SpriteHolder.GetComponent<Renderer>().enabled = _interactive;
                 TailHolder.GetComponent<Renderer>().enabled = _interactive && (Tail != TailType.None);
             }
+        }
+
+        public bool HasFlag(BoneFlags flags)
+        {
+            return (Flags & flags) != 0;
         }
         #endregion
 
@@ -89,7 +117,6 @@ namespace MUPS
             float dist = Camera.main.transform.InverseTransformPoint(transform.position).z;
             float r = SaveData.Settings.Current.View.BoneSize * dist;
             Collider.radius = r / 2.0f;
-            //SpriteHolder.LookAt(Camera.main.transform.position);
             SpriteHolder.rotation = Camera.main.transform.rotation;
             SpriteHolder.Rotate(0, 180, 0, Space.Self);
             SpriteHolder.localScale = new Vector3(r, r, r);

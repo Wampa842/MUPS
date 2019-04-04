@@ -8,7 +8,7 @@ using Crosstales.FB;
 using MUPS.UI;
 using PmxSharp;
 
-namespace MUPS.Scene
+namespace MUPS
 {
     class SceneController : MonoBehaviour
     {
@@ -16,101 +16,27 @@ namespace MUPS.Scene
         public static SceneController Instance;
 
         // References
-        public Transform ModelListContent = null;
-        private Button _cameraButton = null;
+        public Transform ModelListContent = null;               // Container panel that holds the model list buttons
+        public Button ToggleLocalButton = null;                 // Button that cycles the reference coordinate system
+        private Button _cameraButton = null;                    // Model list button that selects "nothing" in the scene
 
         // Prefabs
-        private GameObject _modelListButton;
-        private GameObject _testModel;
-        private GameObject _bonePrefab;
+        private GameObject _modelListButton;                    // Base model list button
+        private GameObject _testModel;                          // Simple model for quick testing purposes
+        private GameObject _bonePrefab;                         // Bone object prefab
 
-        public bool Local = false;
-        public List<PmxModelBehaviour> SceneModels = null;
+        public bool Local = false;                              // Reference coordinate system
+        public List<PmxModelBehaviour> SceneModels = null;      // List of models in the scene
         public PmxModelBehaviour SelectedModel = null;
-        public Transform SelectedItem = null;
         public PmxBoneBehaviour SelectedBone = null;
-        public Button ToggleLocalButton = null;
 
+        #region Scene management
         public void FindModels()
         {
             foreach (PmxModelBehaviour m in GetComponentsInChildren<PmxModelBehaviour>())
                 SceneModels.Add(m);
 
             PopulateModelList();
-        }
-
-        public void AddTestModel()
-        {
-            //GameObject model = Instantiate<GameObject>(_testModel);
-            GameObject model = Testing.CreateTestModel();
-            Color c = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1);
-            model.GetComponentInChildren<MeshRenderer>().material.color = c;
-            PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
-            comp.DisplayName = model.name = string.Format(CultureInfo.InvariantCulture, "Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
-            model.transform.SetParent(transform);
-            SceneModels.Add(comp);
-            Logger.Log("Added " + comp.DisplayName);
-
-            PopulateModelList();
-            SelectModel(comp);
-        }
-
-        public void AddModel()
-        {
-            string path = FileBrowser.OpenSingleFile("Open model", /*Application.persistentDataPath*/ @"H:\MMD\UserFile\Model\004_Ruby", new ExtensionFilter("PMX files", "pmx"));
-            if(!string.IsNullOrEmpty(path))
-            {
-                PmxImporter import = new PmxImporter(path);
-                GameObject model = import.Import().Load(_bonePrefab);
-                model.transform.SetParent(transform);
-                PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
-
-                SceneModels.Add(comp);
-                Logger.Log("Added \"" + comp.DisplayName + "\"");
-                PopulateModelList();
-                SelectModel(comp);
-            }
-        }
-
-        public void SelectModel(PmxModelBehaviour model)
-        {
-            foreach(Button b in ModelListContent.GetComponentsInChildren<Button>())
-            {
-                b.transform.Find("SelectedIcon").GetComponent<Text>().enabled = false;
-            }
-
-            foreach(PmxModelBehaviour comp in SceneModels)
-            {
-                comp.SetBonesVisible(false);
-            }
-
-            if (model == null)
-            {
-                Logger.Log($"Selected camera");
-                SelectedModel = null;
-                SelectedItem = null;
-                _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
-            }
-            else
-            {
-                Logger.Log($"Selected {model.DisplayName}");
-                SelectedModel = model;
-                SelectedItem = model.transform;
-                SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
-                SelectedModel.SetBonesVisible(true);
-
-            }
-        }
-
-        public void DeleteSelected()
-        {
-            if (SelectedModel == null)
-                return;
-
-            SceneModels.Remove(SelectedModel);
-            Destroy(SelectedModel.gameObject);
-            PopulateModelList();
-            SelectModel(null);
         }
 
         public void PopulateModelList()
@@ -144,7 +70,7 @@ namespace MUPS.Scene
                 m.ListButton = b;
             }
 
-            if(SelectedModel == null)
+            if (SelectedModel == null)
             {
                 _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
             }
@@ -154,6 +80,88 @@ namespace MUPS.Scene
             }
         }
 
+        public void AddTestModel()
+        {
+            //GameObject model = Instantiate<GameObject>(_testModel);
+            GameObject model = Testing.CreateTestModel();
+            Color c = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1);
+            model.GetComponentInChildren<MeshRenderer>().material.color = c;
+            PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
+            comp.DisplayName = model.name = string.Format(CultureInfo.InvariantCulture, "Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
+            model.transform.SetParent(transform);
+            SceneModels.Add(comp);
+            Logger.Log("Added " + comp.DisplayName);
+
+            PopulateModelList();
+            SelectModel(comp);
+        }
+
+        public void AddModel()
+        {
+            string path = FileBrowser.OpenSingleFile("Open model", /*Application.persistentDataPath*/ @"H:\MMD\UserFile\Model\004_Ruby", new ExtensionFilter("PMX files", "pmx"));
+            if (!string.IsNullOrEmpty(path))
+            {
+                PmxImporter import = new PmxImporter(path);
+                GameObject model = import.Import().Load(_bonePrefab);
+                model.transform.SetParent(transform);
+                PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
+
+                SceneModels.Add(comp);
+                Logger.Log("Added \"" + comp.DisplayName + "\"");
+                PopulateModelList();
+                SelectModel(comp);
+            }
+        }
+
+        public void SelectModel(PmxModelBehaviour model)
+        {
+            foreach (Button b in ModelListContent.GetComponentsInChildren<Button>())
+            {
+                b.transform.Find("SelectedIcon").GetComponent<Text>().enabled = false;
+            }
+
+            foreach (PmxModelBehaviour comp in SceneModels)
+            {
+                comp.SetBonesInteractive(false);
+            }
+
+            if (model == null)
+            {
+                Logger.Log($"Selected camera");
+                SelectedModel = null;
+                _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
+            }
+            else
+            {
+                Logger.Log($"Selected {model.DisplayName}");
+                SelectedModel = model;
+                //SelectedItem = model.LastSelectedBone == null ? model.transform : model.LastSelectedBone.transform;
+                SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
+                SelectedModel.SetBonesInteractive(true);
+            }
+        }
+
+        public void DeleteSelected()
+        {
+            if (SelectedModel == null)
+                return;
+
+            SceneModels.Remove(SelectedModel);
+            Destroy(SelectedModel.gameObject);
+            PopulateModelList();
+            SelectModel(null);
+        }
+        
+        public void SelectBone(PmxBoneBehaviour bone)
+        {
+            SelectedBone = bone;
+            SelectedModel.LastSelectedBone = SelectedBone;
+            SelectedBone.SetColors();
+            Logger.Log(string.Format("Selected bone {0}", SelectedBone.Name), Logger.LogLevel.Trace);
+        }
+        #endregion
+
+        #region Scene settings
         public void CycleReferenceSystem()
         {
             Local = !Local;
@@ -161,6 +169,7 @@ namespace MUPS.Scene
             ToggleLocalButton.GetComponentInChildren<Text>().text = label;
             Logger.Log(label);
         }
+        #endregion
 
         public void Awake()
         {
@@ -181,7 +190,10 @@ namespace MUPS.Scene
             _modelListButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListButton");
             _testModel = Resources.Load<GameObject>("Prefabs/TestModel");
             _bonePrefab = Resources.Load<GameObject>("Prefabs/GUI/Bone");
+        }
 
+        public void Start()
+        {
             FindModels();
             SelectModel(null);
         }

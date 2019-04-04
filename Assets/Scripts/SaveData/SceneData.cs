@@ -11,6 +11,43 @@ using UnityEngine;
 namespace MUPS.SaveData
 {
     [Serializable]
+    public struct BonePose
+    {
+        public Vector3 Position;
+        public Vector4 Rotation;
+
+        public BonePose(Transform t)
+        {
+            Position = t.localPosition;
+            Quaternion rot = t.localRotation;
+            Rotation = new Vector4(rot.x, rot.y, rot.z, rot.w);
+        }
+
+        public void Apply(Transform t)
+        {
+            t.localPosition = Position;
+            t.localRotation = new Quaternion(Rotation.x, Rotation.y, Rotation.z, Rotation.w);
+        }
+    }
+
+    [Serializable]
+    public class Pose
+    {
+        public string FileName { get; set; }
+        public Dictionary<string, BonePose> Skeleton { get; set; }
+
+        public Pose(PmxModelBehaviour model)
+        {
+            FileName = model.FileName;
+            Skeleton = new Dictionary<string, BonePose>();
+            foreach(PmxBoneBehaviour bone in model.GetComponentsInChildren<PmxBoneBehaviour>())
+            {
+                Skeleton.Add(bone.Name, new BonePose(bone.transform));
+            }
+        }
+    }
+
+    [Serializable]
     public class CameraData
     {
         public Vector3 Position { get; set; }
@@ -53,7 +90,7 @@ namespace MUPS.SaveData
             private set
             {
                 _stored = value;
-                MUPS.UI.ViewController.Instance.SetCamera(_stored.Camera);
+                ViewController.Instance.SetCamera(_stored.Camera);
             }
         }
 
