@@ -20,6 +20,10 @@ namespace PmxSharp
         {
             return new Vector4(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
+        public static Quaternion ReadQuaternion(this BinaryReader reader)
+        {
+            return new Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
         public static Color ReadColor3(this BinaryReader reader)
         {
             Vector3 vec = reader.ReadVector3();
