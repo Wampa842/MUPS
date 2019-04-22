@@ -19,7 +19,10 @@ namespace PmxSharp
         public string[] TexturePaths { get; set; }
         public PmxMaterial[] Materials { get; set; }
         public PmxBone[] Bones { get; set; }
-
+        public PmxMorph[] Morphs { get; set; }
+        public PmxFrameGroup[] DisplayFrames { get; set; }
+        public PmxRigidbody[] Rigidbodies { get; set; }
+        public PmxJoint[] Joints { get; set; }
 
         #region Constructors
         public PmxModel()

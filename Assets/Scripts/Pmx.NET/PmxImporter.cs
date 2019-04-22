@@ -12,7 +12,7 @@ namespace PmxSharp
     {
         public string FilePath { get; set; }
         private Encoding _textEncoding = Encoding.Unicode;
-        private BinaryReader _reader;
+        private BinaryReader _fileReader;
         private PmxModel _model;
 
         private PmxModel Import(BinaryReader reader)
@@ -101,7 +101,8 @@ namespace PmxSharp
                 }
 
                 // Deform
-                switch (reader.ReadByte())
+                byte deformType = reader.ReadByte();
+                switch (deformType)
                 {
                     case 0:
                         vert.Deform = new Bdef1Deform(reader.ReadIndex(PmxIndexType.Bone));
@@ -152,7 +153,7 @@ namespace PmxSharp
                         };
                         break;
                     default:
-                        break;
+                        throw new PmxImportException(string.Format("PMX import error: vertex deform is an invalid type. Expected 0..4, got {0}.", deformType), reader.BaseStream.Position);
                 }
 
                 // Edge
@@ -216,10 +217,12 @@ namespace PmxSharp
             {
                 PmxBone bone = new PmxBone();
 
+                bone.Index = i;
+                bone.Children = new List<PmxBone>();
                 bone.NameJapanese = reader.ReadPmxString(_textEncoding);
                 bone.NameEnglish = reader.ReadPmxString(_textEncoding);
                 bone.Position = reader.ReadVector3();
-                bone.Parent = reader.ReadIndex(PmxIndexType.Bone);
+                bone.ParentIndex = reader.ReadIndex(PmxIndexType.Bone);
                 bone.DeformOrder = reader.ReadInt32();
                 bone.Flags = (PmxBoneFlags)reader.ReadUInt16();
                 if (bone.HasFlag(PmxBoneFlags.TailIsIndex))
@@ -271,22 +274,148 @@ namespace PmxSharp
 
                 _model.Bones[i] = bone;
             }
+
+            foreach (PmxBone bone in _model.Bones)
+            {
+                if (bone.ParentIndex >= 0)
+                {
+                    bone.ParentBone = _model.Bones[bone.ParentIndex];
+                    bone.ParentBone.Children.Add(bone);
+                }
+            }
             #endregion
 
             #region Morph data
+            _model.Morphs = new PmxMorph[reader.ReadInt32()];
+            for (int i = 0; i < _model.Morphs.Length; ++i)
+            {
+                PmxMorph morph = new PmxMorph();
+                morph.NameJapanese = reader.ReadPmxString(_textEncoding);
+                morph.NameEnglish = reader.ReadPmxString(_textEncoding);
+                morph.Panel = (PmxMorph.MorphPanel)reader.ReadByte();
+                morph.Type = (PmxMorph.MorphType)reader.ReadByte();
+                morph.Offsets = new PmxMorphOffset[reader.ReadInt32()];
 
+                switch (morph.Type)
+                {
+                    case PmxMorph.MorphType.Group:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxGroupOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.Vertex:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxVertexOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.Bone:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxBoneOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.UV:
+                    case PmxMorph.MorphType.UV1:
+                    case PmxMorph.MorphType.UV2:
+                    case PmxMorph.MorphType.UV3:
+                    case PmxMorph.MorphType.UV4:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxUVOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.Material:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxMaterialOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.Flip:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxFlipOffset.Read(reader);
+                        }
+                        break;
+                    case PmxMorph.MorphType.Impulse:
+                        for (int j = 0; j < morph.Offsets.Length; ++j)
+                        {
+                            morph.Offsets[j] = PmxImpulseOffset.Read(reader);
+                        }
+                        break;
+                    default:
+                        throw new PmxImportException(string.Format("Unexpected morph type. Expected 0..10, got {0}.", (int)morph.Type), reader.BaseStream.Position);
+                }
+
+                _model.Morphs[i] = morph;
+            }
             #endregion
 
             #region Group data
-
+            _model.DisplayFrames = new PmxFrameGroup[reader.ReadInt32()];
+            for (int i = 0; i < _model.DisplayFrames.Length; ++i)
+            {
+                PmxFrameGroup frame = new PmxFrameGroup();
+                frame.NameJapanese = reader.ReadPmxString(_textEncoding);
+                frame.NameEnglish = reader.ReadPmxString(_textEncoding);
+                frame.Special = reader.ReadByte() != 0;
+                frame.Frames = new PmxFrameData[reader.ReadInt32()];
+                for (int j = 0; j < frame.Frames.Length; ++j)
+                {
+                    PmxFrameData fd = new PmxFrameData();
+                    fd.Type = reader.ReadByte() == 0 ? PmxFrameData.FrameType.Bone : PmxFrameData.FrameType.Morph;
+                    fd.Index = fd.Type == PmxFrameData.FrameType.Bone ? reader.ReadIndex(PmxIndexType.Bone) : reader.ReadIndex(PmxIndexType.Morph);
+                    frame.Frames[j] = fd;
+                }
+                _model.DisplayFrames[i] = frame;
+            }
             #endregion
 
             #region Rigid body data
-
+            _model.Rigidbodies = new PmxRigidbody[reader.ReadInt32()];
+            for(int i = 0; i < _model.Rigidbodies.Length; ++i)
+            {
+                PmxRigidbody rb = new PmxRigidbody();
+                rb.NameJapanese = reader.ReadPmxString(_textEncoding);
+                rb.NameEnglish = reader.ReadPmxString(_textEncoding);
+                rb.BoneIndex = reader.ReadIndex(PmxIndexType.Bone);
+                rb.CollisionGroup = reader.ReadByte();
+                rb.CollisionIgnoreMask = reader.ReadInt16();
+                rb.Shape = (PmxRigidbody.PmxRigidbodyShape)reader.ReadByte();
+                rb.Bounds = reader.ReadVector3();
+                rb.Position = reader.ReadVector3();
+                rb.Rotation = Quaternion.Euler(reader.ReadVector3());
+                rb.Mass = reader.ReadSingle();
+                rb.Drag = reader.ReadSingle();
+                rb.RotationDrag = reader.ReadSingle();
+                rb.Repulsion = reader.ReadSingle();
+                rb.Friction = reader.ReadSingle();
+                rb.PhysicsMode = (PmxRigidbody.PmxRigidbodyPhysics)reader.ReadByte();
+                _model.Rigidbodies[i] = rb;
+            }
             #endregion
 
             #region Joint data
-
+            _model.Joints = new PmxJoint[reader.ReadInt32()];
+            for(int i = 0; i < _model.Joints.Length; ++i)
+            {
+                PmxJoint j = new PmxJoint();
+                j.NameJapanese = reader.ReadPmxString(_textEncoding);
+                j.NameEnglish = reader.ReadPmxString(_textEncoding);
+                j.Type = (PmxJoint.PmxJointType)reader.ReadByte();
+                j.Rigidbody0 = reader.ReadIndex(PmxIndexType.Rigidbody);
+                j.Rigidbody1 = reader.ReadIndex(PmxIndexType.Rigidbody);
+                j.Position = reader.ReadVector3();
+                j.Rotation = Quaternion.Euler(reader.ReadVector3());
+                j.TranslationMin = reader.ReadVector3();
+                j.TranslationMax = reader.ReadVector3();
+                j.RotationMin = reader.ReadVector3();
+                j.RotationMax = reader.ReadVector3();
+                j.SpringTranslation = reader.ReadVector3();
+                j.SpringRotation = reader.ReadVector3();
+                _model.Joints[i] = j;
+            }
             #endregion
 
             // Version 2.0 file ends here.
@@ -304,8 +433,8 @@ namespace PmxSharp
         {
             try
             {
-                _reader = new BinaryReader(File.OpenRead(FilePath));
-                return Import(_reader);
+                _fileReader = new BinaryReader(File.OpenRead(FilePath));
+                return Import(_fileReader);
             }
             catch (Exception)
             {
@@ -313,10 +442,10 @@ namespace PmxSharp
             }
             finally
             {
-                if (_reader != null)
+                if (_fileReader != null)
                 {
-                    _reader.Close();
-                    _reader = null;
+                    _fileReader.Close();
+                    _fileReader = null;
                 }
             }
         }
@@ -329,10 +458,10 @@ namespace PmxSharp
 
         public void Dispose()
         {
-            if (_reader != null)
+            if (_fileReader != null)
             {
-                _reader.Close();
-                _reader = null;
+                _fileReader.Close();
+                _fileReader = null;
             }
         }
         #endregion

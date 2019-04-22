@@ -1,20 +1,116 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Drawing;
 using System.IO;
 using UnityEngine;
 using MUPS;
 
 namespace PmxSharp
 {
+    public enum ImageFileFormat { Unsupported, Png, Jpg, Bmp, Tga, Dds, Tif }
+
+    /// <summary>
+    /// Methods to load various image formats.
+    /// </summary>
+    public static class ImageLoader
+    {
+        private readonly static byte[] _pngSignature = new byte[] { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a };
+        private readonly static byte[] _jpgSignature = new byte[] { 0xff, 0xd8, 0xff };
+        private readonly static byte[] _ddsSignature = new byte[] { 0x44, 0x44, 0x53, 0x20 };
+
+        /// <summary>
+        /// Determines if the given data is a TGA file.
+        /// </summary>
+        private static bool IsTga(byte[] data)
+        {
+            // TGA doesn't have a signature, the best way is to read the header and check if the values make sense.
+            BinaryReader reader = new BinaryReader(new MemoryStream(data));
+
+            // First field - image ID length, 1 byte.
+            reader.ReadByte();   // ignore
+
+            // Second field - color map type, 1 byte, must be 0 or 1.
+            byte colorMapType = reader.ReadByte();
+            if (!(colorMapType == 0 || colorMapType == 1))
+            {
+                return false;
+            }
+
+            // Third field - image type, 1 byte, must be in ranges 0-3 or 9-11
+            byte imageType = reader.ReadByte();
+            if ((imageType > 3 && imageType < 9) || imageType > 11)
+            {
+                return false;
+            }
+
+            // Fourth field - color map, 5 bytes
+            reader.ReadUInt16();    // ignore
+            reader.ReadUInt16();    // ignore
+            byte colorSize = reader.ReadByte();
+            if (!(colorSize == 15 || colorSize == 16 || colorSize == 24 || colorSize == 32))
+            {
+                return false;
+            }
+
+            // Fifth field - image specification, 10 bytes
+            reader.ReadUInt16();    // ignore
+            reader.ReadUInt16();    // ignore
+            reader.ReadUInt16();    // ignore
+            reader.ReadUInt16();    // ignore
+            byte pixelDepth = reader.ReadByte();
+            if (!(pixelDepth == 15 || pixelDepth == 16 || pixelDepth == 24 || pixelDepth == 32))
+            {
+                return false;
+            }
+            byte imageDescriptor = reader.ReadByte();
+            if ((imageDescriptor & 192) != 0)
+            {
+                return false;
+            }
+
+            // Static header ends here and variable length fields begin. If execution reaches this point, the header *probably* contains valid data.
+            reader.Close();
+            return true;
+        }
+
+        public static ImageFileFormat DetectFormat(byte[] data, string extension)
+        {
+            // Detect PNG
+            if (extension == "png" && data.Take(8).SequenceEqual(_pngSignature))
+            {
+                return ImageFileFormat.Png;
+            }
+            else if (data.Take(3).SequenceEqual(_jpgSignature))
+            {
+                return ImageFileFormat.Jpg;
+            }
+            else if (extension == "dds" && data.Take(4).SequenceEqual(_ddsSignature))
+            {
+                return ImageFileFormat.Dds;
+            }
+            else if (extension == "tga" && IsTga(data))
+            {
+                return ImageFileFormat.Tga;
+            }
+
+            return ImageFileFormat.Unsupported;
+        }
+    }
+
     public static class PmxConvert
     {
+        /// <summary>
+        /// Loads a texture from the specified file path.
+        /// </summary>
         public static Texture2D LoadTexture(string path)
         {
             return LoadTexture(File.ReadAllBytes(path));
         }
 
+        /// <summary>
+        /// Loads a texture from the provided data.
+        /// </summary>
         public static Texture2D LoadTexture(byte[] data)
         {
             // Check the file format
@@ -25,6 +121,9 @@ namespace PmxSharp
             return tex;
         }
 
+        /// <summary>
+        /// Converts a PMX model to a Unity object.
+        /// </summary>
         public static GameObject Load(this PmxModel model, GameObject bonePrefab)
         {
             // Model root
@@ -43,6 +142,8 @@ namespace PmxSharp
             Transform[] bones = new Transform[model.Bones.Length];
 
             // First pass - create bones and copy properties
+            PmxBoneBehaviour leftShoulder = null;
+            PmxBoneBehaviour rightShoulder = null;
             for (int i = 0; i < bones.Length; ++i)
             {
                 // Create bone
@@ -77,6 +178,19 @@ namespace PmxSharp
                 c.UpdateSprite();
 
                 bones[i] = bone.transform;
+
+                if (leftShoulder == null && c.Name == "左腕")
+                {
+                    //leftShoulder = model.Bones[i];
+                    leftShoulder = c;
+                    MUPS.Logger.Log("Found left shoulder");
+                }
+                else if (rightShoulder == null && c.Name == "右腕")
+                {
+                    //rightShoulder = model.Bones[i];
+                    rightShoulder = c;
+                    MUPS.Logger.Log("Found right shoulder");
+                }
             }
 
             // Second pass - set up bone hierarchy and tails
@@ -84,10 +198,27 @@ namespace PmxSharp
             {
                 PmxBone original = model.Bones[i];
                 PmxBoneBehaviour bone = bones[i].GetComponent<PmxBoneBehaviour>();
-                bone.transform.SetParent(original.Parent < 0 ? skeletonRoot : bones[original.Parent]);
+
+                bone.transform.SetParent(original.ParentIndex < 0 ? skeletonRoot : bones[original.ParentIndex]);
                 if (bone.Tail == PmxBoneBehaviour.TailType.Bone)
                 {
                     bone.TailBone = bones[original.TailIndex];
+                }
+            }
+
+            // Final pass - reorient arm and custom axis bones
+            if (leftShoulder != null)
+            {
+                foreach (PmxBoneBehaviour bone in leftShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
+                {
+                    bone.transform.Reorient(Quaternion.Euler(0, 0, 45) * Quaternion.Euler(0, 0, -90));
+                }
+            }
+            if (rightShoulder != null)
+            {
+                foreach (PmxBoneBehaviour bone in rightShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
+                {
+                    bone.transform.Reorient(Quaternion.Euler(0, 0, -45) * Quaternion.Euler(0, 0, -90));
                 }
             }
             #endregion

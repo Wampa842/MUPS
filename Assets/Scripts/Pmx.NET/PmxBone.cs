@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace PmxSharp
@@ -9,9 +11,10 @@ namespace PmxSharp
 
     public class PmxBone : PmxItem
     {
+        public int Index { get; set; }
         public PmxBoneFlags Flags { get; set; }
         public Vector3 Position { get; set; }
-        public int Parent { get; set; }
+        public int ParentIndex { get; set; }
         public int DeformOrder { get; set; }
         public Vector3 TailPosition { get; set; }
         public int TailIndex { get; set; }
@@ -22,6 +25,9 @@ namespace PmxSharp
         public Vector3 LocalCoordinateZ { get; set; }
         public int ExternalParent { get; set; }
         public PmxIK IK { get; set; }
+
+        public PmxBone ParentBone { get; set; }
+        public List<PmxBone> Children { get; set; }
 
         /// <summary>
         /// Returns true if any of the specified flag bits are set.
@@ -35,7 +41,7 @@ namespace PmxSharp
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("Bone {0}\n", Name)
-                .AppendFormat("Parent {0}\n", Parent)
+                .AppendFormat("Parent {0}\n", ParentIndex)
                 .AppendFormat("Position {0}\n", Position)
                 .Append(HasFlag(PmxBoneFlags.IK) ? "IK" : "Not IK");
             return sb.ToString();
