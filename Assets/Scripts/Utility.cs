@@ -9,6 +9,39 @@ using MUPS.SaveData;
 
 namespace MUPS
 {
+    public static class MUPSExtensions
+    {
+        /// <summary>
+        /// Reorients the Transform to the specified rotation without affecting its children.
+        /// </summary>
+        public static void Reorient(this Transform t, Quaternion rot, bool local = false)
+        {
+            // Detach children
+            List<Transform> list = new List<Transform>();
+            foreach (Transform child in t)
+            {
+                list.Add(child);
+            }
+            t.DetachChildren();
+
+            // Reorient
+            if (local)
+            {
+                t.localRotation = rot;
+            }
+            else
+            {
+                t.rotation = rot;
+            }
+
+            // Reattach children
+            foreach (Transform child in list)
+            {
+                child.SetParent(t);
+            }
+        }
+    }
+
     public static class Layers
     {
         public static int Skeleton { get { return 17; } }

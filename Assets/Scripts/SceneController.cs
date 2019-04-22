@@ -13,20 +13,21 @@ namespace MUPS
     class SceneController : MonoBehaviour
     {
         // Singleton
-        public static SceneController Instance;
+        public static SceneController Instance { get; private set; }
 
         // References
-        public Transform ModelListContent = null;               // Container panel that holds the model list buttons
-        public Button ToggleLocalButton = null;                 // Button that cycles the reference coordinate system
-        private Button _cameraButton = null;                    // Model list button that selects "nothing" in the scene
+        public Transform ModelListContent = null;                       // Container panel that holds the model list buttons
+        public Button ToggleLocalButton = null;                         // Button that cycles the reference coordinate system
+        private Button _cameraButton = null;                            // Model list button that selects "nothing" in the scene
+        public Transform AxisGizmo = null;                              // Axis marker gizmo
 
         // Prefabs
         private GameObject _modelListButton;                    // Base model list button
         private GameObject _testModel;                          // Simple model for quick testing purposes
         private GameObject _bonePrefab;                         // Bone object prefab
 
-        public bool Local = false;                              // Reference coordinate system
-        public List<PmxModelBehaviour> SceneModels = null;      // List of models in the scene
+        public bool Local = true;                              // Reference coordinate system
+        public List<PmxModelBehaviour> SceneModels = null;     // List of models in the scene
         public PmxModelBehaviour SelectedModel = null;
         public PmxBoneBehaviour SelectedBone = null;
 
@@ -105,6 +106,15 @@ namespace MUPS
                 GameObject model = import.Import().Load(_bonePrefab);
                 model.transform.SetParent(transform);
                 PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
+                foreach (Transform bone in comp.SkeletonRoot)
+                {
+                    PmxBoneBehaviour b = bone.GetComponent<PmxBoneBehaviour>();
+                    if (b != null)
+                    {
+                        comp.LastSelectedBone = b;
+                        break;
+                    }
+                }
 
                 SceneModels.Add(comp);
                 Logger.Log("Added \"" + comp.DisplayName + "\"");
@@ -130,12 +140,14 @@ namespace MUPS
                 Logger.Log($"Selected camera");
                 SelectedModel = null;
                 _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
+                AxisGizmo.SetParent(transform);
+                AxisGizmo.gameObject.SetActive(false);
             }
             else
             {
                 Logger.Log($"Selected {model.DisplayName}");
                 SelectedModel = model;
-                //SelectedItem = model.LastSelectedBone == null ? model.transform : model.LastSelectedBone.transform;
+                SelectBone(model.LastSelectedBone);
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
                 SelectedModel.SetBonesInteractive(true);
             }
@@ -151,12 +163,17 @@ namespace MUPS
             PopulateModelList();
             SelectModel(null);
         }
-        
+
         public void SelectBone(PmxBoneBehaviour bone)
         {
             SelectedBone = bone;
             SelectedModel.LastSelectedBone = SelectedBone;
             SelectedBone.SetColors();
+            TransformControlBehaviour.Instance.SetTranslationEnabled(SelectedBone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation));
+            AxisGizmo.gameObject.SetActive(true);
+            AxisGizmo.SetParent(SelectedBone.transform);
+            AxisGizmo.localPosition = Vector3.zero;
+            AxisGizmo.localRotation = Quaternion.identity;
             Logger.Log(string.Format("Selected bone {0}", SelectedBone.Name), Logger.LogLevel.Trace);
         }
         #endregion
@@ -196,6 +213,22 @@ namespace MUPS
         {
             FindModels();
             SelectModel(null);
+            ToggleLocalButton.GetComponentInChildren<Text>().text = Local ? "Local" : "Global";
+        }
+
+        public void Update()
+        {
+            float dist = Camera.main.transform.InverseTransformPoint(AxisGizmo.position).z;
+            float scale = dist * SaveData.Settings.Current.View.AxisIndicatorSize;
+            AxisGizmo.localScale = new Vector3(scale, scale, scale);
+            if (Local)
+            {
+                AxisGizmo.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                AxisGizmo.rotation = Quaternion.identity;
+            }
         }
 
         public void OnApplicationQuit()

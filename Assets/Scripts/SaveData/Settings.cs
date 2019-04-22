@@ -197,13 +197,15 @@ namespace MUPS.SaveData
     {
         public float BoneSize { get; set; }
         public float BoneTailSize { get; set; }
+        public float AxisIndicatorSize { get; set; }
         public float BoneOpacity { get; set; }
         public float BoneTailOpacity { get; set; }
 
         public ViewProperties()
         {
-            BoneSize = 0.05f;
-            BoneTailSize = 0.03f;
+            BoneSize = 0.025f;
+            BoneTailSize = 0.015f;
+            AxisIndicatorSize = 0.35f;
             BoneOpacity = 0.7f;
             BoneTailOpacity = 0.4f;
         }
@@ -213,10 +215,16 @@ namespace MUPS.SaveData
     public class ApplicationProperties
     {
         public Logger.LogLevel MinimumLogLevel { get; set; }
+        public int RenderWidth { get; set; }
+        public int RenderHeight { get; set; }
+        public string LastRenderPath { get; set; }
 
         public ApplicationProperties()
         {
             MinimumLogLevel = Logger.LogLevel.Trace;
+            RenderWidth = 1920;
+            RenderHeight = 1080;
+            LastRenderPath = Path.Combine(Application.persistentDataPath, "image.png");
         }
     }
 

@@ -6,6 +6,24 @@ namespace MUPS.UI
 {
     class TransformControlBehaviour : MonoBehaviour
     {
+        public static TransformControlBehaviour Instance { get; private set; }
+#pragma warning disable 0649
+        public Image RX, RY, RZ, TX, TY, TZ;
+#pragma warning restore 0649
+        public void SetTranslationEnabled(bool active)
+        {
+            if (active)
+            {
+                TX.color = Color.red;
+                TY.color = Color.green;
+                TZ.color = Color.blue;
+            }
+            else
+            {
+                TX.color = TY.color = TZ.color = Color.gray;
+            }
+        }
+
         public void Transform(int mode)
         {
             float delta = Input.GetAxis("Vertical") * ViewController.Instance.MovementMultiplier * 0.5f;
@@ -69,6 +87,19 @@ namespace MUPS.UI
                             ViewController.Instance.Pivot.Rotate(0, 0, delta, Space.World);
                         break;
                 }
+            }
+        }
+
+        public void Awake()
+        {
+            if(Instance == null)
+            {
+                Instance = this;
+            }
+            else if(Instance != this)
+            {
+                Destroy(Instance);
+                Instance = this;
             }
         }
     }

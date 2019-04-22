@@ -35,14 +35,26 @@ namespace MUPS.SaveData
     {
         public string FileName { get; set; }
         public Dictionary<string, BonePose> Skeleton { get; set; }
+        public Dictionary<string, float> Morph { get; set; }
 
         public Pose(PmxModelBehaviour model)
         {
             FileName = model.FileName;
+
             Skeleton = new Dictionary<string, BonePose>();
             foreach(PmxBoneBehaviour bone in model.GetComponentsInChildren<PmxBoneBehaviour>())
             {
                 Skeleton.Add(bone.Name, new BonePose(bone.transform));
+            }
+
+            Morph = new Dictionary<string, float>();
+        }
+
+        public void Apply(PmxModelBehaviour model)
+        {
+            foreach(PmxBoneBehaviour bone in model.GetComponentsInChildren<PmxBoneBehaviour>())
+            {
+                Skeleton[bone.Name].Apply(bone.transform);
             }
         }
     }
@@ -79,6 +91,7 @@ namespace MUPS.SaveData
     public class SceneData
     {
         public CameraData Camera { get; set; }
+        public List<Pose> Poses { get; set; }
 
         private static SceneData _stored;
         public static SceneData Stored
