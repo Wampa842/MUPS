@@ -168,6 +168,8 @@ namespace PmxSharp
                     c.TailPosition = original.TailPosition;
 
                 c.Flags = 0;
+                if (original.HasFlag(PmxBoneFlags.Rotation))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Rotation;
                 if (original.HasFlag(PmxBoneFlags.Translation))
                     c.Flags |= PmxBoneBehaviour.BoneFlags.Translation;
                 if (original.HasFlag(PmxBoneFlags.Visible))
