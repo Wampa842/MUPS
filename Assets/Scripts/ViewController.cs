@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Crosstales.FB;
 using MUPS.SaveData;
+using MUPS.Scene;
 
 namespace MUPS
 {
@@ -50,25 +51,20 @@ namespace MUPS
             set { Gizmo.gameObject.SetActive(value); }
         }
 
-        private CameraData CameraState
+        public CameraData CameraState
         {
             get
             {
-                return new CameraData(Center.position, Pivot.rotation, Slider.localEulerAngles.z, Slider.localPosition.z, FieldOfView);
+                return new CameraData(Center.position, Pivot.rotation, Slider.localPosition.z, Slider.localRotation.eulerAngles.z, FieldOfView);
             }
             set
             {
                 Center.position = value.Position;
-                Pivot.rotation = new Quaternion(value.Rotation.x, value.Rotation.y, value.Rotation.z, value.Rotation.w);
+                Pivot.rotation = value.Rotation;
                 Slider.localRotation = Quaternion.Euler(0, 0, value.Roll);
                 Slider.localPosition = new Vector3(0, 0, value.Distance);
                 FieldOfView = value.FieldOfView;
             }
-        }
-
-        public void SetCamera(CameraData data)
-        {
-            CameraState = data;
         }
 
         private void ResetCamera()
@@ -169,22 +165,6 @@ namespace MUPS
                 Logger.Log("Camera reset");
             }
 
-            // Store scene state
-            if (Settings.Current.Keyboard.RegisterState.KeyDown())
-            {
-                CameraData cs = CameraState;
-                Debug.Log(SceneData.Stored == null);
-                SceneData.Stored.Camera = cs;
-                Logger.Log("Camera state stored");
-            }
-
-            // Recall state
-            if (Settings.Current.Keyboard.LoadCameraState.KeyDown())
-            {
-                Logger.Log("Camera state loaded");
-                CameraState = SceneData.Stored.Camera;
-            }
-
             // Cycle local/global/screen coordinate system
             if (Settings.Current.Keyboard.ToggleLocal.KeyDown())
             {
@@ -202,14 +182,6 @@ namespace MUPS
                     if (c != null)
                         SceneController.Instance.SelectModel(c);
                 }
-            }
-
-            // Save scene
-            if(Settings.Current.Keyboard.Save.KeyDown())
-            {
-                string path = FileBrowser.SaveFile("Save scene", Application.persistentDataPath, "scene", new ExtensionFilter("MUPS Scene Data", "mups"));
-                if (!string.IsNullOrEmpty(path))
-                    SceneData.Export(path);
             }
 
             // Set the gizmo's scale
