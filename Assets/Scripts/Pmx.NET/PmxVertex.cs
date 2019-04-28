@@ -191,12 +191,12 @@ namespace PmxSharp
             EdgeSize = 1.0f;
         }
 
-        public static Vector3[] GetPositions(IEnumerable<PmxVertex> coll)
+        public static Vector3[] GetPositions(IEnumerable<PmxVertex> coll, float scale = 1.0f)
         {
             List<Vector3> list = new List<Vector3>();
             foreach (var v in coll)
             {
-                list.Add(v.Position);
+                list.Add(v.Position * scale);
             }
             return list.ToArray();
         }

@@ -100,6 +100,8 @@ namespace PmxSharp
 
     public static class PmxConvert
     {
+        public static float Scale { get; } = 0.33333f;
+
         /// <summary>
         /// Loads a texture from the specified file path.
         /// </summary>
@@ -155,7 +157,7 @@ namespace PmxSharp
                 // Copy properties
                 c.Name = original.Name;
                 bone.name = original.Name;
-                t.position = original.Position;
+                t.position = original.Position * Scale;
                 c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
 
                 c.Tail = original.HasFlag(PmxBoneFlags.TailIsIndex) ? PmxBoneBehaviour.TailType.Bone : PmxBoneBehaviour.TailType.Vector;
@@ -165,7 +167,7 @@ namespace PmxSharp
                 }
 
                 if (c.Tail == PmxBoneBehaviour.TailType.Vector)
-                    c.TailPosition = original.TailPosition;
+                    c.TailPosition = original.TailPosition * Scale;
 
                 c.Flags = 0;
                 if (original.HasFlag(PmxBoneFlags.Rotation))
@@ -185,13 +187,13 @@ namespace PmxSharp
                 {
                     //leftShoulder = model.Bones[i];
                     leftShoulder = c;
-                    MUPS.Logger.Log("Found left shoulder");
+                    Log.Trace("Found left shoulder");
                 }
                 else if (rightShoulder == null && c.Name == "右腕")
                 {
                     //rightShoulder = model.Bones[i];
                     rightShoulder = c;
-                    MUPS.Logger.Log("Found right shoulder");
+                    Log.Trace("Found right shoulder");
                 }
             }
 
@@ -253,7 +255,7 @@ namespace PmxSharp
                 // Create Unity mesh
                 Mesh mesh = new Mesh();
                 mesh.name = material.Name;
-                mesh.vertices = PmxVertex.GetPositions(vertices);
+                mesh.vertices = PmxVertex.GetPositions(vertices, Scale);
                 mesh.normals = PmxVertex.GetNormals(vertices);
                 mesh.uv = PmxVertex.GetUVs(vertices);
                 mesh.triangles = triangles.ToArray();
@@ -263,8 +265,8 @@ namespace PmxSharp
             }
 
             // Create objects and components
-
-            /*for (int i = 0; i < meshes.Length; ++i)
+            /*
+            for (int i = 0; i < meshes.Length; ++i)
             {
                 Mesh mesh = meshes[i];
                 GameObject o = new GameObject(mesh.name);
@@ -288,7 +290,6 @@ namespace PmxSharp
 
                 o.transform.SetParent(meshRoot);
             }*/
-
             for (int i = 0; i < meshes.Length; ++i)
             {
                 Mesh mesh = meshes[i];
@@ -297,6 +298,7 @@ namespace PmxSharp
                 mf.sharedMesh = mesh;
                 SkinnedMeshRenderer smr = o.AddComponent<SkinnedMeshRenderer>();
                 smr.sharedMesh = mesh;
+                smr.updateWhenOffscreen = true;
 
                 smr.rootBone = o.transform;
                 smr.bones = bones;
