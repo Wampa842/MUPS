@@ -9,7 +9,7 @@
 		//Tags { "RenderType"="Opaque" }
 		Tags {"Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent"}
 		LOD 100
-		ZWrite On
+		ZWrite Off
 		ZTest Always
 		Blend SrcAlpha OneMinusSrcAlpha
 
