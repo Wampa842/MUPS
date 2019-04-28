@@ -34,12 +34,10 @@ namespace MUPS.Scene
         {
             if(bone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation))
             {
-                Logger.Log("Applied translation", Logger.LogLevel.Trace);
                 bone.transform.localPosition = Position;
             }
             if(bone.HasFlag(PmxBoneBehaviour.BoneFlags.Rotation))
             {
-                Logger.Log("Applied rotation", Logger.LogLevel.Trace);
                 bone.transform.localRotation = Rotation;
             }
         }

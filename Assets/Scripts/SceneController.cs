@@ -91,7 +91,7 @@ namespace MUPS
             comp.DisplayName = model.name = string.Format(CultureInfo.InvariantCulture, "Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
             model.transform.SetParent(transform);
             SceneModels.Add(comp);
-            Logger.Log("Added " + comp.DisplayName);
+            Log.Info("Added " + comp.DisplayName);
 
             PopulateModelList();
             SelectModel(comp);
@@ -117,7 +117,7 @@ namespace MUPS
                 }
 
                 SceneModels.Add(comp);
-                Logger.Log("Added \"" + comp.DisplayName + "\"");
+                Log.Info("Added \"" + comp.DisplayName + "\"");
                 PopulateModelList();
                 SelectModel(comp);
             }
@@ -137,7 +137,7 @@ namespace MUPS
 
             if (model == null)
             {
-                Logger.Log($"Selected camera");
+                Log.Trace($"Selected camera");
                 SelectedModel = null;
                 _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
                 AxisGizmo.SetParent(transform);
@@ -145,7 +145,7 @@ namespace MUPS
             }
             else
             {
-                Logger.Log($"Selected {model.DisplayName}");
+                Log.Trace($"Selected {model.DisplayName}");
                 SelectedModel = model;
                 SelectBone(model.LastSelectedBone);
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
@@ -174,7 +174,7 @@ namespace MUPS
             AxisGizmo.SetParent(SelectedBone.transform);
             AxisGizmo.localPosition = Vector3.zero;
             AxisGizmo.localRotation = Quaternion.identity;
-            Logger.Log(string.Format("Selected bone {0}", SelectedBone.Name), Logger.LogLevel.Trace);
+            Log.Trace(string.Format("Selected bone {0}", SelectedBone.Name));
         }
         #endregion
 
@@ -184,7 +184,7 @@ namespace MUPS
             Local = !Local;
             string label = Local ? "Local" : "Global";
             ToggleLocalButton.GetComponentInChildren<Text>().text = label;
-            Logger.Log(label);
+            Log.Trace("Switched to reference system: " + label);
         }
         #endregion
 
@@ -202,7 +202,7 @@ namespace MUPS
 
             SaveData.Settings.Load();
 
-            Logger.Log("### NEW SESSION (" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ")");
+            Log.WriteLog("### NEW SESSION (" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ")");
 
             _modelListButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListButton");
             _testModel = Resources.Load<GameObject>("Prefabs/TestModel");

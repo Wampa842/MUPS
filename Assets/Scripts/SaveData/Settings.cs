@@ -214,14 +214,14 @@ namespace MUPS.SaveData
     [Serializable]
     public class ApplicationProperties
     {
-        public Logger.LogLevel MinimumLogLevel { get; set; }
+        public Log.LogLevel MinimumLogLevel { get; set; }
         public int RenderWidth { get; set; }
         public int RenderHeight { get; set; }
         public string LastRenderPath { get; set; }
 
         public ApplicationProperties()
         {
-            MinimumLogLevel = Logger.LogLevel.Trace;
+            MinimumLogLevel = Log.LogLevel.Trace;
             RenderWidth = 1920;
             RenderHeight = 1080;
             LastRenderPath = Path.Combine(Application.persistentDataPath, "image.png");
@@ -257,12 +257,12 @@ namespace MUPS.SaveData
                 stream = new StreamWriter(path);
                 writer = new JsonTextWriter(stream);
                 serializer.Serialize(writer, Current);
-                Logger.Log("Config saved.");
+                Log.Info("Config saved.");
             }
             catch (Exception ex)
             {
-                Logger.Log("An exception occured while trying to save the application settings.", Logger.LogLevel.Error);
-                Logger.Log(ex, Logger.LogLevel.Error, true);
+                Log.Error("An exception occured while trying to save the application settings.");
+                Log.Error(ex);
             }
             finally
             {
@@ -292,20 +292,20 @@ namespace MUPS.SaveData
                 {
                     Current = new Settings();
                     Save();
-                    Logger.Log("Config file not found - default config loaded.", Logger.LogLevel.Debug);
+                    Log.Warning("Config file not found - default config loaded.");
                 }
                 else
                 {
                     stream = new StreamReader(path);
                     reader = new JsonTextReader(stream);
                     Current = serializer.Deserialize<Settings>(reader);
-                    Logger.Log("Config loaded.");
+                    Log.Info("Config loaded.");
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log("An exception occured while trying to load the application settings.", Logger.LogLevel.Error);
-                Logger.Log(ex, Logger.LogLevel.Error, true);
+                Log.Error("An exception occured while trying to load the application settings.");
+                Log.Error(ex);
             }
             finally
             {

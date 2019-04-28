@@ -421,7 +421,7 @@ namespace PmxSharp
             // Version 2.0 file ends here.
             if (_model.Version == PmxVersion.Pmx20)
             {
-                MUPS.Logger.Log($"Finished importing the file. Stream position is {reader.BaseStream.Position}. Stream length is {reader.BaseStream.Length}.", MUPS.Logger.LogLevel.Debug);
+                MUPS.Log.Debug($"Finished importing the file. Stream position is {reader.BaseStream.Position}. Stream length is {reader.BaseStream.Length}.");
                 return _model;
             }
 

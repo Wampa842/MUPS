@@ -34,7 +34,7 @@ namespace MUPS.Scene
         {
             if(Model == null)
             {
-                Logger.Log("Model is null", Logger.LogLevel.Info);
+                Log.Debug("Model is null");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace MUPS.Scene
                 pose.Apply();
             }
 
-            Logger.Log($"Loaded pose for {Model.DisplayName}", Logger.LogLevel.Info);
+            Log.Trace($"Loaded pose for {Model.DisplayName}");
         }
     }
 }

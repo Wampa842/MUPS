@@ -162,7 +162,7 @@ namespace MUPS
             if (Settings.Current.Keyboard.ResetCamera.KeyDown())
             {
                 ResetCamera();
-                Logger.Log("Camera reset");
+                Log.Info("Camera reset");
             }
 
             // Cycle local/global/screen coordinate system

@@ -35,7 +35,7 @@ namespace MUPS.Scene
         {
             if (SelectedFrame >= Frames.Count)
             {
-                Logger.Log($"Cannot load frame at {SelectedFrame} - out of range.", Logger.LogLevel.Debug);
+                Log.Debug($"Cannot load frame at {SelectedFrame} - out of range.");
                 return;
             }
 
@@ -43,13 +43,13 @@ namespace MUPS.Scene
 
             if (frame == null)
             {
-                Logger.Log($"Cannot load frame at {SelectedFrame} - data is null.", Logger.LogLevel.Debug);
+                Log.Debug($"Cannot load frame at {SelectedFrame} - data is null.");
                 return;
             }
 
             frame.Apply();
 
-            Logger.Log($"Loaded frame {SelectedFrame}", Logger.LogLevel.Debug);
+            Log.Debug($"Loaded frame {SelectedFrame}");
         }
 
         public void RegisterFrame()
@@ -57,12 +57,12 @@ namespace MUPS.Scene
             if(SelectedFrame == Frames.Count)
             {
                 Frames.Add(Frame.GetCurrent());
-                Logger.Log($"Added new frame at {SelectedFrame}", Logger.LogLevel.Debug);
+                Log.Debug($"Added new frame at {SelectedFrame}");
             }
             else
             {
                 Frames[SelectedFrame] = Frame.GetCurrent();
-                Logger.Log($"Overwrote frame at {SelectedFrame}", Logger.LogLevel.Debug);
+                Log.Debug($"Overwrote frame at {SelectedFrame}");
             }
             FrameCountLabel.text = Frames.Count.ToString();
         }

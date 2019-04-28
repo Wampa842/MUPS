@@ -49,52 +49,95 @@ namespace MUPS
         public static int BoneSprites { get { return 18; } }
     }
 
-    public class Logger
+    public static class Log
     {
-        public enum LogLevel { Trace = 1, Debug = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6, Disabled }
-        public static bool LogTimestamps = true;
-        public static string LogPath = Path.Combine(Application.persistentDataPath, "mups.log");
-        private static bool _logFailed = false;
+        public static string LogPath { get; } = Path.Combine(Application.persistentDataPath, "mups.log");
+        public static bool LogWriteFailed { get; private set; } = false;
 
-        public static void Log(object message, LogLevel level = LogLevel.Info, bool noTimestamp = false)
+        public enum LogLevel { Trace = 1, Debug = 2, Info = 3, Warning = 4, Error = 5, Fatal = 6, Disabled = 7 }
+        public static LogLevel MinimumLevel { get; set; } = LogLevel.Trace;
+
+        public static void WriteLog(string line)
         {
-            if (_logFailed)
+            if (LogWriteFailed)
                 return;
-            if (level >= Settings.Current.ApplicationSettings.MinimumLogLevel)
-            {
-                StreamWriter writer = new StreamWriter(LogPath, true, Encoding.Unicode);
-                string ts = (LogTimestamps || noTimestamp) ? string.Format(CultureInfo.InvariantCulture.NumberFormat, "{0:0.0000} ", Time.time) : "";
-                try
-                {
-                    writer.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0}{1}", ts, message));
-                    writer.Close();
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarningFormat("Logging unavailable:\n{0}", ex);
-                    _logFailed = true;
-                }
 
-                switch (level)
-                {
-                    case LogLevel.Trace:
-                    case LogLevel.Debug:
-                    case LogLevel.Info:
-                        Debug.Log(message);
-                        break;
-                    case LogLevel.Warning:
-                        Debug.LogWarning(message);
-                        break;
-                    case LogLevel.Error:
-                        Debug.LogError(message);
-                        break;
-                    case LogLevel.Fatal:
-                        Debug.LogError(message);
-                        break;
-                    default:
-                        break;
-                }
+            StreamWriter writer = null;
+            try
+            {
+                writer = new StreamWriter(LogPath, true, Encoding.Unicode);
+                writer.WriteLine(line);
             }
+            catch(Exception ex)
+            {
+                UnityEngine.Debug.LogErrorFormat("Log file unavailable: {0}", ex.ToString());
+                LogWriteFailed = true;
+            }
+            finally
+            {
+                writer.Close();
+            }
+
+        }
+
+        public static void Trace(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Trace)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.Log(line);
+        }
+
+        public static void Debug(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Debug)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.Log(line);
+        }
+
+        public static void Info(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Info)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.Log(line);
+        }
+
+        public static void Warning(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Warning)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.LogWarning(line);
+        }
+
+        public static void Error(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Error)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.LogError(line);
+        }
+
+        public static void Fatal(params object[] message)
+        {
+            if (MinimumLevel > LogLevel.Fatal)
+                return;
+
+            string line = string.Join("; ", message);
+            WriteLog(line);
+            UnityEngine.Debug.LogError(line);
         }
     }
 }
