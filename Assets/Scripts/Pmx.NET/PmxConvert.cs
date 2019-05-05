@@ -264,6 +264,9 @@ namespace PmxSharp
                 meshes[i] = mesh;
             }
 
+            #endregion
+            #region Mesh Renderer
+
             // Create objects and components
             /*
             for (int i = 0; i < meshes.Length; ++i)
@@ -290,6 +293,22 @@ namespace PmxSharp
 
                 o.transform.SetParent(meshRoot);
             }*/
+            
+            Texture2D[] textures = new Texture2D[model.TexturePaths.Length];
+            for(int i = 0; i < textures.Length; ++i)
+            {
+                string path = Path.Combine(Path.GetDirectoryName(model.FilePath), model.TexturePaths[i]);
+                if(File.Exists(path))
+                {
+                    textures[i] = LoadTexture(path);
+                }
+                else
+                {
+                    textures[i] = new Texture2D(2, 2);
+                    textures[i].SetPixels(new Color[] { Color.magenta, Color.magenta, Color.magenta, Color.magenta });
+                }
+            }
+
             for (int i = 0; i < meshes.Length; ++i)
             {
                 Mesh mesh = meshes[i];
@@ -317,11 +336,7 @@ namespace PmxSharp
                 mat.color = pmxMat.Diffuse;
                 if (pmxMat.TextureIndex >= 0)
                 {
-                    string path = Path.Combine(Path.GetDirectoryName(model.FilePath), model.TexturePaths[pmxMat.TextureIndex]);
-                    if (File.Exists(path))
-                    {
-                        mat.mainTexture = LoadTexture(path);
-                    }
+                    mat.mainTexture = textures[pmxMat.TextureIndex];
                 }
 
                 o.transform.SetParent(meshRoot);
