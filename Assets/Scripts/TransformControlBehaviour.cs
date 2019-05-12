@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using MUPS.SaveData;
 
 namespace MUPS.UI
 {
     class TransformControlBehaviour : MonoBehaviour
     {
         public static TransformControlBehaviour Instance { get; private set; }
-#pragma warning disable 0649
+
         public Image RX, RY, RZ, TX, TY, TZ;
-#pragma warning restore 0649
+        public Transform CameraFacing;
+        public GameObject ScreenGizmo;
+        public bool Local = true;
+        public bool ScreenGizmoVisible = false;
+
         public void SetTranslationEnabled(bool active)
         {
             if (active)
@@ -27,7 +32,7 @@ namespace MUPS.UI
         public void Transform(int mode)
         {
             float delta = Input.GetAxis("Vertical") * ViewController.Instance.MovementMultiplier * 0.5f;
-            Space space = SceneController.Instance.Local ? Space.Self : Space.World;
+            Space space = Local ? Space.Self : Space.World;
             PmxBoneBehaviour bone = SceneController.Instance.SelectedBone;
 
             if (bone != null)
@@ -66,13 +71,13 @@ namespace MUPS.UI
                 switch (mode)
                 {
                     case 0:
-                        ViewController.Instance.Center.Translate(delta * 0.05f, 0, 0, SceneController.Instance.Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
+                        ViewController.Instance.Center.Translate(delta * 0.05f, 0, 0, Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
                         break;
                     case 1:
-                        ViewController.Instance.Center.Translate(0, delta * 0.05f, 0, SceneController.Instance.Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
+                        ViewController.Instance.Center.Translate(0, delta * 0.05f, 0, Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
                         break;
                     case 2:
-                        ViewController.Instance.Center.Translate(0, 0, delta * 0.05f, SceneController.Instance.Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
+                        ViewController.Instance.Center.Translate(0, 0, delta * 0.05f, Local ? ViewController.Instance.Pivot : ViewController.Instance.Center);
                         break;
                     case 3:
                         ViewController.Instance.Pivot.Rotate(delta, 0, 0, space);
@@ -81,12 +86,46 @@ namespace MUPS.UI
                         ViewController.Instance.Pivot.Rotate(0, delta, 0, Space.World);
                         break;
                     case 5:
-                        if (SceneController.Instance.Local)
+                        if (Local)
                             ViewController.Instance.Slider.Rotate(0, 0, delta, Space.Self);
                         else
                             ViewController.Instance.Pivot.Rotate(0, 0, delta, Space.World);
                         break;
                 }
+            }
+        }
+
+        public void ToggleScreenGizmo()
+        {
+            ScreenGizmoVisible = !ScreenGizmoVisible;
+            ScreenGizmo.SetActive(ScreenGizmoVisible);
+        }
+
+        public void SetScreenGizmo(bool active)
+        {
+            ScreenGizmoVisible = active;
+            ScreenGizmo.SetActive(ScreenGizmoVisible);
+        }
+
+        public void TransformScreen(int mode)
+        {
+            Debug.Log(mode);
+            switch (mode)
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -101,6 +140,25 @@ namespace MUPS.UI
                 Destroy(Instance);
                 Instance = this;
             }
+        }
+
+        private void Start()
+        {
+            SetScreenGizmo(false);
+        }
+
+        public void Update()
+        {
+            if(Settings.Current.Keyboard.ToggleScreenGizmo.Down())
+            {
+                ToggleScreenGizmo();
+            }
+
+            ScreenGizmo.transform.rotation = CameraFacing.rotation;
+            float dist = Camera.main.transform.InverseTransformPoint(ScreenGizmo.transform.position).z;
+            float scale = dist * 0.15f;
+            ScreenGizmo.transform.localScale = new Vector3(scale, scale, scale);
+            //ScreenGizmo.transform.LookAt(Camera.main.transform, Camera.main.transform.up);
         }
     }
 }

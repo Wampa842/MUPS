@@ -96,6 +96,21 @@ namespace PmxSharp
 
             return ImageFileFormat.Unsupported;
         }
+
+        public static bool IsTranslucent(this Texture2D tex, float threshold = 1.0f)
+        {
+            int w = tex.width;
+            int h = tex.height;
+            for(int y = 0; y < h; ++y)
+            {
+                for(int x = 0; x < w; ++x)
+                {
+                    if (tex.GetPixel(x, y).a < threshold)
+                        return true;
+                }
+            }
+            return false;
+        }
     }
 
     public static class PmxConvert
@@ -338,6 +353,12 @@ namespace PmxSharp
                 {
                     mat.mainTexture = textures[pmxMat.TextureIndex];
                 }
+
+                //foreach(MaterialDirective dir in pmxMat.Directives)
+                //{
+                //    dir.Execute(mat);
+                //    dir.Execute(smr);
+                //}
 
                 o.transform.SetParent(meshRoot);
             }

@@ -25,6 +25,7 @@ namespace MUPS
         public Sprite RotateBoneSprite;     // Circular bone sprite
         public Sprite TranslateBoneSprite;  // Square bone sprite
         public Sprite TwistBoneSprite;      // X bone sprite
+        public Transform FacingReverse;     // Transform that faces the camera
 
         // Inputs
         private bool _active;               // Control is active
@@ -159,20 +160,14 @@ namespace MUPS
             }
 
             // Reset camera
-            if (Settings.Current.Keyboard.ResetCamera.KeyDown())
+            if (Settings.Current.Keyboard.ResetCamera.Down())
             {
                 ResetCamera();
                 Log.Info("Camera reset");
             }
 
-            // Cycle local/global/screen coordinate system
-            if (Settings.Current.Keyboard.ToggleLocal.KeyDown())
-            {
-                SceneController.Instance.CycleReferenceSystem();
-            }
-
             // Select object
-            if (Settings.Current.Keyboard.SelectObject.KeyDown())
+            if (Settings.Current.Keyboard.SelectObject.Down())
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit[] hits = Physics.RaycastAll(ray);

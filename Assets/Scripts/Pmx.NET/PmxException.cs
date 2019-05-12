@@ -29,4 +29,22 @@ namespace PmxSharp
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
+
+
+    [Serializable]
+    public class MaterialDirectiveException : PmxException
+    {
+        public string RawString { get; private set; }
+
+        public MaterialDirectiveException() { }
+        public MaterialDirectiveException(string message) : base(message) { }
+        public MaterialDirectiveException(string message, string raw) : this(message)
+        {
+            RawString = raw;
+        }
+        public MaterialDirectiveException(string message, Exception inner) : base(message, inner) { }
+        protected MaterialDirectiveException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
 }

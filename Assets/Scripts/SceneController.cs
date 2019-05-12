@@ -26,7 +26,7 @@ namespace MUPS
         private GameObject _testModel;                          // Simple model for quick testing purposes
         private GameObject _bonePrefab;                         // Bone object prefab
 
-        public bool Local = true;                              // Reference coordinate system
+        //public bool Local = true;                              // Reference coordinate system
         public List<PmxModelBehaviour> SceneModels = null;     // List of models in the scene
         public PmxModelBehaviour SelectedModel = null;
         public PmxBoneBehaviour SelectedBone = null;
@@ -170,23 +170,29 @@ namespace MUPS
             SelectedModel.LastSelectedBone = SelectedBone;
             SelectedBone.SetColors();
             TransformControlBehaviour.Instance.SetTranslationEnabled(SelectedBone.HasFlag(PmxBoneBehaviour.BoneFlags.Translation));
+
             AxisGizmo.gameObject.SetActive(true);
             AxisGizmo.SetParent(SelectedBone.transform);
             AxisGizmo.localPosition = Vector3.zero;
             AxisGizmo.localRotation = Quaternion.identity;
+
+            Transform screenGizmo = TransformControlBehaviour.Instance.ScreenGizmo.transform;
+            screenGizmo.SetParent(SelectedBone.transform);
+            screenGizmo.localPosition = Vector3.zero;
+
             Log.Trace(string.Format("Selected bone {0}", SelectedBone.Name));
         }
         #endregion
 
-        #region Scene settings
-        public void CycleReferenceSystem()
-        {
-            Local = !Local;
-            string label = Local ? "Local" : "Global";
-            ToggleLocalButton.GetComponentInChildren<Text>().text = label;
-            Log.Trace("Switched to reference system: " + label);
-        }
-        #endregion
+        //#region Scene settings
+        //public void CycleReferenceSystem()
+        //{
+        //    Local = !Local;
+        //    string label = Local ? "Local" : "Global";
+        //    ToggleLocalButton.GetComponentInChildren<Text>().text = label;
+        //    Log.Trace("Switched to reference system: " + label);
+        //}
+        //#endregion
 
         public void Awake()
         {
@@ -213,7 +219,7 @@ namespace MUPS
         {
             FindModels();
             SelectModel(null);
-            ToggleLocalButton.GetComponentInChildren<Text>().text = Local ? "Local" : "Global";
+            //ToggleLocalButton.GetComponentInChildren<Text>().text = Local ? "Local" : "Global";
         }
 
         public void Update()
@@ -221,7 +227,7 @@ namespace MUPS
             float dist = Camera.main.transform.InverseTransformPoint(AxisGizmo.position).z;
             float scale = dist * SaveData.Settings.Current.View.AxisIndicatorSize;
             AxisGizmo.localScale = new Vector3(scale, scale, scale);
-            if (Local)
+            if (TransformControlBehaviour.Instance.Local)
             {
                 AxisGizmo.localRotation = Quaternion.identity;
             }

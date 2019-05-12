@@ -117,8 +117,7 @@ namespace MUPS
             float dist = Camera.main.transform.InverseTransformPoint(transform.position).z;
             float r = Settings.Current.View.BoneSize * dist;
             Collider.radius = r / 2.0f;
-            SpriteHolder.rotation = Camera.main.transform.rotation;
-            SpriteHolder.Rotate(0, 180, 0, Space.Self);
+            SpriteHolder.rotation = ViewController.Instance.FacingReverse.rotation;
             SpriteHolder.localScale = new Vector3(r, r, r);
 
             switch (Tail)
