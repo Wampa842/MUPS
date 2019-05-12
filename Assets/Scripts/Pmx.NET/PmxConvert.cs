@@ -145,10 +145,10 @@ namespace PmxSharp
         {
             // Model root
             GameObject root = new GameObject(model.NameJapanese);
-            PmxModelBehaviour component = root.AddComponent<PmxModelBehaviour>();
+            SceneObject component = root.AddComponent<SceneObject>();
 
             component.NameEnglish = model.NameEnglish;
-            component.FileName = model.NameJapanese;
+            component.NameJapanese = model.NameJapanese;
             component.DescriptionEnglish = model.DescriptionEnglish;
             component.DescriptionJapanese = model.DescriptionJapanese;
             component.FilePath = model.FilePath;

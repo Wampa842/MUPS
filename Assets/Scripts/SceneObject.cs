@@ -8,7 +8,7 @@ namespace MUPS
     /// <summary>
     /// Represents the root element of a PMX model.
     /// </summary>
-    public class PmxModelBehaviour : MonoBehaviour
+    public class SceneObject : MonoBehaviour
     {
         public static bool PreferJapaneseText = false;
 
@@ -17,19 +17,19 @@ namespace MUPS
         public bool Ignore = false;
         public string FilePath = "";
         public string NameEnglish = "none";
-        public string FileName = "none";
+        public string NameJapanese = "none";
         public string DisplayName
         {
             get
             {
                 if (PreferJapaneseText)
-                    return string.IsNullOrEmpty(FileName) ? NameEnglish : FileName;
+                    return string.IsNullOrEmpty(NameJapanese) ? NameEnglish : NameJapanese;
                 else
-                    return string.IsNullOrEmpty(NameEnglish) ? FileName : NameEnglish;
+                    return string.IsNullOrEmpty(NameEnglish) ? NameJapanese : NameEnglish;
             }
             set
             {
-                NameEnglish = FileName = value;
+                NameEnglish = NameJapanese = value;
             }
         }
         public string DescriptionEnglish = "Empty description (English)";
@@ -51,6 +51,28 @@ namespace MUPS
             {
                 action.Invoke(b.transform, b);
             }
+        }
+
+        public static SceneObject Create(string name, bool rootBone = false)
+        {
+            GameObject root = new GameObject(name);
+            SceneObject comp = root.AddComponent<SceneObject>();
+            comp.SkeletonRoot = new GameObject("Skeleton").transform;
+            comp.SkeletonRoot.SetParent(root.transform);
+            comp.MeshRoot = new GameObject("Mesh").transform;
+            comp.MeshRoot.SetParent(root.transform);
+            if(rootBone)
+            {
+                GameObject bone = GameObject.Instantiate(SceneController.Instance.BonePrefab);
+                bone.transform.SetParent(comp.SkeletonRoot);
+                PmxBoneBehaviour bc = bone.GetComponent<PmxBoneBehaviour>();
+                bone.name = bc.name = "root";
+                bc.Interactive = true;
+                bc.Flags = PmxBoneBehaviour.BoneFlags.Rotation | PmxBoneBehaviour.BoneFlags.Translation | PmxBoneBehaviour.BoneFlags.Visible;
+                bc.Tail = PmxBoneBehaviour.TailType.None;
+            }
+
+            return comp;
         }
     }
 }

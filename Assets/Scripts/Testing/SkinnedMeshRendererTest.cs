@@ -10,7 +10,7 @@ namespace MUPS
         {
             // Create container objects
             GameObject root = new GameObject("Skinned Mesh Test");
-            PmxModelBehaviour c = root.AddComponent<PmxModelBehaviour>();
+            SceneObject c = root.AddComponent<SceneObject>();
             c.DisplayName = "Skinned Mesh Test";
             GameObject mp = new GameObject("Model");
             mp.transform.SetParent(root.transform);

@@ -41,7 +41,7 @@ namespace MUPS.Scene
             Frame f = new Frame();
 
             f.Camera = ViewController.Instance.CameraState;
-            foreach(PmxModelBehaviour model in SceneController.Instance.SceneModels)
+            foreach(SceneObject model in SceneController.Instance.SceneModels)
             {
                 f.Models.Add(new ModelPose(model));
             }

@@ -24,17 +24,17 @@ namespace MUPS
         // Prefabs
         private GameObject _modelListButton;                    // Base model list button
         private GameObject _testModel;                          // Simple model for quick testing purposes
-        private GameObject _bonePrefab;                         // Bone object prefab
+        public GameObject BonePrefab;                           // Bone object prefab
 
         //public bool Local = true;                              // Reference coordinate system
-        public List<PmxModelBehaviour> SceneModels = null;     // List of models in the scene
-        public PmxModelBehaviour SelectedModel = null;
+        public List<SceneObject> SceneModels = null;     // List of models in the scene
+        public SceneObject SelectedModel = null;
         public PmxBoneBehaviour SelectedBone = null;
 
         #region Scene management
         public void FindModels()
         {
-            foreach (PmxModelBehaviour m in GetComponentsInChildren<PmxModelBehaviour>())
+            foreach (SceneObject m in GetComponentsInChildren<SceneObject>())
                 SceneModels.Add(m);
 
             PopulateModelList();
@@ -57,7 +57,7 @@ namespace MUPS
                 SelectModel(null);
             });
 
-            foreach (PmxModelBehaviour m in SceneModels)
+            foreach (SceneObject m in SceneModels)
             {
                 button = Instantiate<GameObject>(_modelListButton);
                 button.GetComponentInChildren<Text>().text = m.DisplayName;
@@ -87,7 +87,7 @@ namespace MUPS
             GameObject model = Testing.CreateTestModel();
             Color c = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1);
             model.GetComponentInChildren<MeshRenderer>().material.color = c;
-            PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
+            SceneObject comp = model.GetComponent<SceneObject>();
             comp.DisplayName = model.name = string.Format(CultureInfo.InvariantCulture, "Test Model ({0:0.0} {1:0.0} {2:0.0})", c.r, c.g, c.b);
             model.transform.SetParent(transform);
             SceneModels.Add(comp);
@@ -103,9 +103,9 @@ namespace MUPS
             if (!string.IsNullOrEmpty(path))
             {
                 PmxImporter import = new PmxImporter(path);
-                GameObject model = import.Import().Load(_bonePrefab);
+                GameObject model = import.Import().Load(BonePrefab);
                 model.transform.SetParent(transform);
-                PmxModelBehaviour comp = model.GetComponent<PmxModelBehaviour>();
+                SceneObject comp = model.GetComponent<SceneObject>();
                 foreach (Transform bone in comp.SkeletonRoot)
                 {
                     PmxBoneBehaviour b = bone.GetComponent<PmxBoneBehaviour>();
@@ -123,14 +123,14 @@ namespace MUPS
             }
         }
 
-        public void SelectModel(PmxModelBehaviour model)
+        public void SelectModel(SceneObject model)
         {
             foreach (Button b in ModelListContent.GetComponentsInChildren<Button>())
             {
                 b.transform.Find("SelectedIcon").GetComponent<Text>().enabled = false;
             }
 
-            foreach (PmxModelBehaviour comp in SceneModels)
+            foreach (SceneObject comp in SceneModels)
             {
                 comp.SetBonesInteractive(false);
             }
@@ -212,7 +212,7 @@ namespace MUPS
 
             _modelListButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListButton");
             _testModel = Resources.Load<GameObject>("Prefabs/TestModel");
-            _bonePrefab = Resources.Load<GameObject>("Prefabs/GUI/Bone");
+            BonePrefab = Resources.Load<GameObject>("Prefabs/GUI/Bone");
         }
 
         public void Start()

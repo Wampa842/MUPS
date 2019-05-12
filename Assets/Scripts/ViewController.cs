@@ -173,7 +173,7 @@ namespace MUPS
                 RaycastHit[] hits = Physics.RaycastAll(ray);
                 for (int i = 0; i < hits.Length; ++i)
                 {
-                    PmxModelBehaviour c = hits[i].transform.GetComponentInParent<PmxModelBehaviour>();
+                    SceneObject c = hits[i].transform.GetComponentInParent<SceneObject>();
                     if (c != null)
                         SceneController.Instance.SelectModel(c);
                 }

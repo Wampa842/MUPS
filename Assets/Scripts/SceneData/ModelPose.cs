@@ -12,7 +12,7 @@ namespace MUPS.Scene
     // Note to self: THIS IS NOT SERIALIZED TO FILE. Use references, for fuck's sake.
     public class ModelPose
     {
-        public PmxModelBehaviour Model { get; set; }
+        public SceneObject Model { get; set; }
         public List<BonePose> Skeleton { get; set; }
 
         public ModelPose()
@@ -21,7 +21,7 @@ namespace MUPS.Scene
             Skeleton = new List<BonePose>();
         }
 
-        public ModelPose(PmxModelBehaviour model) : this()
+        public ModelPose(SceneObject model) : this()
         {
             Model = model;
             foreach(PmxBoneBehaviour bone in model.SkeletonRoot.GetComponentsInChildren<PmxBoneBehaviour>())
