@@ -2635,6 +2635,7 @@ MonoBehaviour:
   ModelListContent: {fileID: 88885605}
   ToggleLocalButton: {fileID: 704154165}
   AxisGizmo: {fileID: 3734663580641992956}
+  BonePrefab: {fileID: 0}
   SceneModels: []
   SelectedModel: {fileID: 0}
   SelectedBone: {fileID: 0}
@@ -3656,7 +3657,7 @@ GameObject:
   - component: {fileID: 544143812}
   - component: {fileID: 544143813}
   m_Layer: 5
-  m_Name: ColorPicker
+  m_Name: SkyColorPicker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14953,7 +14954,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &6837966039798403533
 BoxCollider:
   m_ObjectHideFlags: 0
