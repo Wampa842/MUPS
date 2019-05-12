@@ -99,7 +99,7 @@ namespace MUPS.SaveData
         /// <summary>
         /// Returns true during the frame in which the key is pressed, and if there's a modifier key, the modifier is held down.
         /// </summary>
-        public bool KeyDown()
+        public bool Down()
         {
             if (Input.GetKeyDown(Key))
             {
@@ -113,7 +113,36 @@ namespace MUPS.SaveData
                 }
                 else
                 {
-                    return Operation == ModifierOperation.And ? Input.GetKey(Modifier1) && Input.GetKey(Modifier2) : Input.GetKey(Modifier1) || Input.GetKey(Modifier2);
+                    if (Operation == ModifierOperation.And)
+                        return Input.GetKey(Modifier1) && Input.GetKey(Modifier2);
+                    else
+                        return Input.GetKey(Modifier1) || Input.GetKey(Modifier2);
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true during the frame in which the key is released, and if there's a modifier key, the modifier is held down.
+        /// </summary>
+        public bool Up()
+        {
+            if (Input.GetKeyUp(Key))
+            {
+                if (Modifier1 == KeyCode.None)
+                {
+                    return true;
+                }
+                else if (Modifier2 == KeyCode.None)
+                {
+                    return Input.GetKey(Modifier1);
+                }
+                else
+                {
+                    if (Operation == ModifierOperation.And)
+                        return Input.GetKey(Modifier1) && Input.GetKey(Modifier2);
+                    else
+                        return Input.GetKey(Modifier1) || Input.GetKey(Modifier2);
                 }
             }
             return false;
@@ -122,7 +151,7 @@ namespace MUPS.SaveData
         /// <summary>
         /// Returns true while the main key (and optionally the modifier key) is held down.
         /// </summary>
-        public bool KeyPressed()
+        public bool Pressed()
         {
             if (Input.GetKey(Key))
             {
@@ -136,14 +165,20 @@ namespace MUPS.SaveData
                 }
                 else
                 {
-                    return Operation == ModifierOperation.And ? Input.GetKey(Modifier1) && Input.GetKey(Modifier2) : Input.GetKey(Modifier1) || Input.GetKey(Modifier2);
+                    if (Operation == ModifierOperation.And)
+                        return Input.GetKey(Modifier1) && Input.GetKey(Modifier2);
+                    else
+                        return Input.GetKey(Modifier1) || Input.GetKey(Modifier2);
                 }
             }
             return false;
         }
     }
 
-    [System.Serializable]
+    /// <summary>
+    /// User input settings.
+    /// </summary>
+    [Serializable]
     public class KeyboardControls
     {
         // View controls
@@ -165,6 +200,7 @@ namespace MUPS.SaveData
         public KeyBinding RegisterState { get; set; }
         public KeyBinding PreviousFrame { get; set; }
         public KeyBinding NextFrame { get; set; }
+        public KeyBinding ToggleScreenGizmo { get; set; }
 
         // IO controls
         public KeyBinding Save { get; private set; }
@@ -186,12 +222,16 @@ namespace MUPS.SaveData
             RegisterState = new KeyBinding(KeyCode.Return);
             PreviousFrame = new KeyBinding(KeyCode.PageUp);
             NextFrame = new KeyBinding(KeyCode.PageDown);
+            ToggleScreenGizmo = new KeyBinding(KeyCode.X);
 
             Save = new KeyBinding(KeyCode.S);
             Load = new KeyBinding(KeyCode.L);
         }
     }
 
+    /// <summary>
+    /// Scene display settings.
+    /// </summary>
     [Serializable]
     public class ViewProperties
     {
@@ -211,6 +251,9 @@ namespace MUPS.SaveData
         }
     }
 
+    /// <summary>
+    /// Application and system settings.
+    /// </summary>
     [Serializable]
     public class ApplicationProperties
     {
@@ -218,6 +261,7 @@ namespace MUPS.SaveData
         public int RenderWidth { get; set; }
         public int RenderHeight { get; set; }
         public string LastRenderPath { get; set; }
+        public string LastModelPath { get; set; }
 
         public ApplicationProperties()
         {
@@ -225,6 +269,7 @@ namespace MUPS.SaveData
             RenderWidth = 1920;
             RenderHeight = 1080;
             LastRenderPath = Path.Combine(Application.persistentDataPath, "image.png");
+            LastModelPath = Application.persistentDataPath;
         }
     }
 
