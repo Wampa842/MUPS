@@ -15,6 +15,10 @@ namespace MUPS.Scene
         // Object references
         public Text FrameCountLabel;
         public Text SelectedFrameLabel;
+        public Image FrameDisplay;
+
+        // Assets
+        public Sprite[] Sprites;
 
         // Frames
         public List<Frame> Frames { get; private set; }
@@ -29,6 +33,7 @@ namespace MUPS.Scene
                 SelectedFrame = 0;
 
             SelectedFrameLabel.text = SelectedFrame.ToString();
+            UpdateFrameImage();
         }
 
         public void LoadFrame()
@@ -54,7 +59,7 @@ namespace MUPS.Scene
 
         public void RegisterFrame()
         {
-            if(SelectedFrame == Frames.Count)
+            if (SelectedFrame == Frames.Count)
             {
                 Frames.Add(Frame.GetCurrent());
                 Log.Debug($"Added new frame at {SelectedFrame}");
@@ -65,15 +70,58 @@ namespace MUPS.Scene
                 Log.Debug($"Overwrote frame at {SelectedFrame}");
             }
             FrameCountLabel.text = Frames.Count.ToString();
+            UpdateFrameImage();
+        }
+
+        public void UpdateFrameImage()
+        {
+            // None
+            if (Frames.Count <= 0)
+            {
+                FrameDisplay.sprite = Sprites[5];
+            }
+            // One or more
+            else
+            {
+                // First selected
+                if(SelectedFrame == 0)
+                {
+                    // Only one
+                    if(Frames.Count == 1)
+                    {
+                        FrameDisplay.sprite = Sprites[0];
+                    }
+                    // More than one
+                    else
+                    {
+                        FrameDisplay.sprite = Sprites[1];
+                    }
+                }
+                // New selected
+                else if (SelectedFrame == Frames.Count)
+                {
+                    FrameDisplay.sprite = Sprites[4];
+                }
+                // Last selected
+                else if(SelectedFrame == Frames.Count - 1)
+                {
+                    FrameDisplay.sprite = Sprites[3];
+                }
+                // Middle selected
+                else
+                {
+                    FrameDisplay.sprite = Sprites[2];
+                }
+            }
         }
 
         void Awake()
         {
-            if(Instance == null)
+            if (Instance == null)
             {
                 Instance = this;
             }
-            else if(Instance != this)
+            else if (Instance != this)
             {
                 Destroy(Instance);
                 Instance = this;
