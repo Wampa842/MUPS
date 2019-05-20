@@ -12,8 +12,15 @@ namespace MUPS.UI
         public Image RX, RY, RZ, TX, TY, TZ;
         public Transform CameraFacing;
         public GameObject ScreenGizmo;
+        public Button ReferenceSystemButton;
         public bool Local = true;
         public bool ScreenGizmoVisible = false;
+
+        public void CycleReferenceSystem()
+        {
+            Local = !Local;
+            ReferenceSystemButton.GetComponentInChildren<Text>().text = Local ? "Local" : "Global";
+        }
 
         public void SetTranslationEnabled(bool active)
         {
@@ -145,6 +152,8 @@ namespace MUPS.UI
         private void Start()
         {
             SetScreenGizmo(false);
+            Local = true;
+            ReferenceSystemButton.GetComponentInChildren<Text>().text = "Local";
         }
 
         public void Update()
@@ -152,6 +161,10 @@ namespace MUPS.UI
             if(Settings.Current.Keyboard.ToggleScreenGizmo.Down())
             {
                 ToggleScreenGizmo();
+            }
+            if(Settings.Current.Keyboard.ToggleLocal.Down())
+            {
+                CycleReferenceSystem();
             }
 
             ScreenGizmo.transform.rotation = CameraFacing.rotation;

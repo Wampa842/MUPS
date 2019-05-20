@@ -9,7 +9,7 @@ using MUPS.SaveData;
 
 namespace MUPS
 {
-    public static class MUPSExtensions
+    public static class Utility
     {
         /// <summary>
         /// Reorients the Transform to the specified rotation without affecting its children.
@@ -39,6 +39,65 @@ namespace MUPS
             {
                 child.SetParent(t);
             }
+        }
+
+        public static bool ParseHtmlColor(string s, out Color color)
+        {
+            string line = s.Trim().TrimStart('#');
+            switch (line.Length)
+            {
+                case 3:
+                case 4:
+                case 6:
+                case 8:
+                    break;
+                default:
+                    color = Color.black;
+                    return false;
+            }
+
+            if (line.Length == 6)
+            {
+                int r = Convert.ToInt32(line.Substring(0, 2), 16);
+                int g = Convert.ToInt32(line.Substring(2, 2), 16);
+                int b = Convert.ToInt32(line.Substring(4, 2), 16);
+                color = new Color(r / 255.0f, g / 255.0f, b / 255.0f, 1);
+            }
+            else if (line.Length == 8)
+            {
+                int r = Convert.ToInt32(line.Substring(0, 2), 16);
+                int g = Convert.ToInt32(line.Substring(2, 2), 16);
+                int b = Convert.ToInt32(line.Substring(4, 2), 16);
+                int a = Convert.ToInt32(line.Substring(6, 2), 16);
+                color = new Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+            }
+            else if (line.Length == 3)
+            {
+                int r = Convert.ToInt32(string.Concat(line[0], line[0]), 16);
+                int g = Convert.ToInt32(string.Concat(line[1], line[1]), 16);
+                int b = Convert.ToInt32(string.Concat(line[2], line[2]), 16);
+                color = new Color(r / 255.0f, g / 255.0f, b / 255.0f, 1);
+            }
+            else
+            {
+                int r = Convert.ToInt32(string.Concat(line[0], line[0]), 16);
+                int g = Convert.ToInt32(string.Concat(line[1], line[1]), 16);
+                int b = Convert.ToInt32(string.Concat(line[2], line[2]), 16);
+                int a = Convert.ToInt32(string.Concat(line[3], line[3]), 16);
+                color = new Color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+            }
+
+            return true;
+        }
+
+        public static string ToHtml(this Color color)
+        {
+            byte r = (byte)(color.r * 255.0f);
+            byte g = (byte)(color.g * 255.0f);
+            byte b = (byte)(color.b * 255.0f);
+            byte a = (byte)(color.a * 255.0f);
+
+            return r.ToString("X2") + g.ToString("X2") + b.ToString("X2") + a.ToString("X2");
         }
     }
 

@@ -5,6 +5,7 @@ using UnityEngine;
 public class ModalController : MonoBehaviour
 {
     public SkyColorPicker SkyColorPicker;
+    public LightColorPicker LightColorPicker;
 
     public bool AnyOpen { get { return Resources.FindObjectsOfTypeAll<ModalWindow>().Any(w => w.Visible); } }
 

@@ -16,8 +16,8 @@ namespace MUPS
         public Button ListButton = null;
         public bool Ignore = false;
         public string FilePath = "";
-        public string NameEnglish = "none";
-        public string NameJapanese = "none";
+        public string NameEnglish = "none123";
+        public string NameJapanese = "none123";
         public string DisplayName
         {
             get
@@ -30,6 +30,10 @@ namespace MUPS
             set
             {
                 NameEnglish = NameJapanese = value;
+                if(ListButton != null)
+                {
+                    ListButton.GetComponentInChildren<Text>().text = value;
+                }
             }
         }
         public string DescriptionEnglish = "Empty description (English)";
@@ -61,7 +65,7 @@ namespace MUPS
             comp.SkeletonRoot.SetParent(root.transform);
             comp.MeshRoot = new GameObject("Mesh").transform;
             comp.MeshRoot.SetParent(root.transform);
-            if(rootBone)
+            if (rootBone)
             {
                 GameObject bone = GameObject.Instantiate(SceneController.Instance.BonePrefab);
                 bone.transform.SetParent(comp.SkeletonRoot);
@@ -70,6 +74,7 @@ namespace MUPS
                 bc.Interactive = true;
                 bc.Flags = PmxBoneBehaviour.BoneFlags.Rotation | PmxBoneBehaviour.BoneFlags.Translation | PmxBoneBehaviour.BoneFlags.Visible;
                 bc.Tail = PmxBoneBehaviour.TailType.None;
+                comp.LastSelectedBone = bc;
             }
 
             return comp;

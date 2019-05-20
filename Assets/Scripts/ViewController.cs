@@ -19,6 +19,7 @@ namespace MUPS
         public Transform Pivot;             // Camera orbit center, only rotated
         public Transform Slider;            // Camera distance from orbit center
         public Transform Gizmo;             // Camera center gizmo
+        public GameObject FloorGrid;        // The origin floor grid
         public Camera GeometryCamera;       // Main geometry camera
         public Camera GUICamera;            // Camera that renders the user interface
         public Camera ScreenshotCamera;     // Camera for saving screenshots
@@ -50,6 +51,11 @@ namespace MUPS
         {
             get { return Gizmo.gameObject.activeSelf; }
             set { Gizmo.gameObject.SetActive(value); }
+        }
+
+        public void ToggleFloorGrid()
+        {
+            FloorGrid.SetActive(!FloorGrid.activeSelf);
         }
 
         public CameraData CameraState

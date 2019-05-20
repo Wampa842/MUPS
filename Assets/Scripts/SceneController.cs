@@ -23,6 +23,7 @@ namespace MUPS
 
         // Prefabs
         private GameObject _modelListButton;                    // Base model list button
+        private GameObject _modelListLightButton;               // Light object list button
         private GameObject _testModel;                          // Simple model for quick testing purposes
         public GameObject BonePrefab;                           // Bone object prefab
 
@@ -123,6 +124,15 @@ namespace MUPS
             }
         }
 
+        public void AddLight()
+        {
+            SceneLight light = SceneLight.Create();
+            SceneModels.Add(light);
+            PopulateModelList();
+            SelectModel(light);
+            ModalController.Instance.LightColorPicker.Show(light);
+        }
+
         public void SelectModel(SceneObject model)
         {
             foreach (Button b in ModelListContent.GetComponentsInChildren<Button>())
@@ -153,10 +163,19 @@ namespace MUPS
             }
         }
 
+        public void EditSelected()
+        {
+            if(SelectedModel is SceneLight)
+            {
+                ModalController.Instance.LightColorPicker.Show(SelectedModel as SceneLight);
+            }
+        }
+
         public void DeleteSelected()
         {
             if (SelectedModel == null)
                 return;
+            TransformControlBehaviour.Instance.ScreenGizmo.transform.SetParent(transform);
 
             SceneModels.Remove(SelectedModel);
             Destroy(SelectedModel.gameObject);
@@ -211,6 +230,7 @@ namespace MUPS
             Log.WriteLog("### NEW SESSION (" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ")");
 
             _modelListButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListButton");
+            _modelListLightButton = Resources.Load<GameObject>("Prefabs/GUI/ModelListLightButton");
             _testModel = Resources.Load<GameObject>("Prefabs/TestModel");
             BonePrefab = Resources.Load<GameObject>("Prefabs/GUI/Bone");
         }

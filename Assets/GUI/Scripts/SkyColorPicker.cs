@@ -4,72 +4,91 @@ using UnityEngine.Events;
 
 public class SkyColorPicker : MonoBehaviour
 {
-    public Slider HueSlider;
-    public Slider SatSlider;
-    public Slider ValSlider;
-    public InputField IntensityField;
-
-    public Image HueHandle;
-    public Image SatHandle;
-    public Image ValHandle;
-    public Image PreviewImage;
-    public Material SatValPreview;
-
-    public Color Color;
-    public float Intensity = 1.0f;
-    public UnityAction<Color, float> OkAction;
-    public UnityAction<Color, float> CancelAction;
+    public Slider SHSlider, SSSlider, SVSlider;
+    public Slider AHSlider, ASSlider, AVSlider;
+    public Image SHImage, SSImage, SVImage;
+    public Image AHImage, ASImage, AVImage;
+    public InputField SIField, AIField;
+    public Slider SpecularSlider;
+    public Light Skylight;
 
     public ModalWindow Window;
 
-    public void UpdateIntensity()
+    private Color _origAColor;
+    private Color _origSColor;
+    private float _origSIntensity;
+    private float _origSpecular;
+
+    public void UpdateSliderColors()
     {
-        float.TryParse(IntensityField.text, out Intensity);
+        SHImage.color = Color.HSVToRGB(SHSlider.value, 1, 1);
+        SSImage.color = Color.HSVToRGB(SHSlider.value, SSSlider.value, 1);
+        SVImage.color = Color.HSVToRGB(SHSlider.value, SSSlider.value, SVSlider.value);
+        AHImage.color = Color.HSVToRGB(AHSlider.value, 1, 1);
+        ASImage.color = Color.HSVToRGB(AHSlider.value, ASSlider.value, 1);
+        AVImage.color = Color.HSVToRGB(AHSlider.value, ASSlider.value, AVSlider.value);
     }
+
 
     public void UpdateColor()
     {
-        Color = Color.HSVToRGB(HueSlider.value, SatSlider.value, ValSlider.value);
-        PreviewImage.color = Color;
-        SatValPreview.SetFloat("_Hue", HueSlider.value);
-        HueHandle.color = Color.HSVToRGB(HueSlider.value, 1, 1);
-        SatHandle.color = Color.HSVToRGB(HueSlider.value, SatSlider.value, 1);
-        float v = ValSlider.value;
-        ValHandle.color = new Color(v, v, v, 1);
+        UpdateSliderColors();
+
+        if (float.TryParse(SIField.text, out float si))
+            Skylight.intensity = si;
+        Skylight.color = Color.HSVToRGB(SHSlider.value, SSSlider.value, SVSlider.value);
+
+        if(float.TryParse(AIField.text, out float ai))
+            RenderSettings.ambientLight = Color.HSVToRGB(AHSlider.value, ASSlider.value, AVSlider.value) * ai;
+
+        RenderSettings.reflectionIntensity = SpecularSlider.value;
     }
 
-    public void Show(Color color, float intensity, UnityAction<Color, float> okAction, UnityAction<Color, float> cancelAction)
+    public void RevertColor()
     {
-        Color = color;
-        Intensity = intensity;
-        OkAction = okAction;
-        CancelAction = cancelAction;
+        RenderSettings.ambientLight = _origAColor;
+        Skylight.color = _origSColor;
+        Skylight.intensity = _origSIntensity;
+        RenderSettings.reflectionIntensity = _origSpecular;
+    }
 
-        float h, s, v;
-        Color.RGBToHSV(color, out h, out s, out v);
-        HueSlider.value = h;
-        SatSlider.value = s;
-        ValSlider.value = v;
-        IntensityField.text = intensity.ToString("0.###");
+    public void Show()
+    {
+        _origAColor = RenderSettings.ambientLight;
+        _origSColor = Skylight.color;
+        _origSIntensity = Skylight.intensity;
+        _origSpecular = RenderSettings.reflectionIntensity;
+
+        Color.RGBToHSV(_origSColor, out float sh, out float ss, out float sv);
+        SHSlider.value = sh;
+        SSSlider.value = ss;
+        SVSlider.value = sv;
+        SIField.text = _origSIntensity.ToString("f4");
+
+        float ai = Mathf.Max(_origAColor.maxColorComponent * 2, Mathf.Epsilon);
+        Color.RGBToHSV(_origAColor / ai, out float ah, out float @as, out float av);
+        AHSlider.value = ah;
+        ASSlider.value = @as;
+        AVSlider.value = av;
+        AIField.text = ai.ToString("f4");
+
+        SpecularSlider.value = _origSpecular;
 
         Window.Show();
+        UpdateSliderColors();
     }
 
     public void Close(bool apply)
     {
-        Debug.Log("text" + IntensityField.text);
-        if(apply && OkAction != null)
+        if (apply && !(float.TryParse(SIField.text, out float si) && float.TryParse(AIField.text, out float ai)))
+            return;
+
+        if(!apply)
         {
-            OkAction.Invoke(Color, Intensity);
-        }
-        else if(CancelAction != null)
-        {
-            CancelAction.Invoke(Color, Intensity);
+            RevertColor();
         }
 
-        OkAction = null;
-        CancelAction = null;
-
+        MUPS.SkyLightController.Instance.UpdatePreviews();
         Window.Hide();
     }
 }

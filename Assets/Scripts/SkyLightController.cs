@@ -23,28 +23,20 @@ namespace MUPS
             Skylight.transform.rotation = Quaternion.Euler(ElevationSlider.value, -AzimuthSlider.value, 0);
         }
 
+        public void UpdatePreviews()
+        {
+            SkylightPreview.color = Skylight.color;
+            AmbientPreview.color = RenderSettings.ambientLight;
+        }
+
         public void SelectSkyColor()
         {
-            ModalController.Instance.SkyColorPicker.Show(Skylight.color, Skylight.intensity, (c, i) => { SetSkylight(c, i); }, (c, i) => { });
+            ModalController.Instance.SkyColorPicker.Show();
         }
 
         public void SelectAmbientColor()
         {
-            Color color = RenderSettings.ambientSkyColor;
-            ModalController.Instance.SkyColorPicker.Show(color, 1, (c, i) => { SetAmbientLight(c, i); }, (c, i) => { });
-        }
-
-        public void SetSkylight(Color color, float intensity)
-        {
-            Skylight.color = color;
-            Skylight.intensity = intensity;
-            SkylightPreview.color = color;
-        }
-
-        public void SetAmbientLight(Color color, float intensity)
-        {
-            RenderSettings.ambientLight = color;
-            AmbientPreview.color = color;
+            ModalController.Instance.SkyColorPicker.Show();
         }
 
         public void UpdateSunShadows(int val)
@@ -63,9 +55,26 @@ namespace MUPS
             }
         }
 
-        public void UpdateLightShadows()
+        public void UpdateLightShadows(int val)
         {
+            LightShadows mode;
+            switch (val)
+            {
+                case 0:
+                    mode = LightShadows.Soft;
+                    break;
+                case 1:
+                    mode = LightShadows.Hard;
+                    break;
+                default:
+                    mode = LightShadows.None;
+                    break;
+            }
 
+            foreach (SceneLight light in Resources.FindObjectsOfTypeAll<SceneLight>())
+            {
+                light.Light.shadows = mode;
+            }
         }
 
         private void Start()
@@ -73,8 +82,10 @@ namespace MUPS
             AzimuthSlider.value = -45;
             ElevationSlider.value = 45;
 
-            SetSkylight(Color.white, 1);
-            SetAmbientLight(new Color(0.3f, 0.3f, 0.3f, 1), 1);
+            Skylight.color = Color.white;
+            Skylight.intensity = 1;
+            RenderSettings.ambientLight = new Color(0.3f, 0.3f, 0.3f, 1);
+            UpdatePreviews();
         }
 
         private void Awake()
