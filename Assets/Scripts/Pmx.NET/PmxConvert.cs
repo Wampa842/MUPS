@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define STATIC_MESH
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
@@ -143,9 +144,18 @@ namespace PmxSharp
         /// </summary>
         public static GameObject Load(this PmxModel model, GameObject bonePrefab)
         {
+            return model.LoadCombined(bonePrefab);
+        }
+
+        /// <summary>
+        /// Loads a PMX model with materials as separate meshes.
+        /// </summary>
+        [Obsolete("This method is obsolete because making morphs work with multiple meshes is borderline impossible. Same amount of draw calls anyway. Use LoadCombined.")]
+        public static GameObject LoadSeparate(this PmxModel model, GameObject bonePrefab)
+        {
             // Model root
             GameObject root = new GameObject(model.NameJapanese);
-            SceneObject component = root.AddComponent<SceneObject>();
+            SceneModel component = root.AddComponent<SceneModel>();
 
             component.NameEnglish = model.NameEnglish;
             component.NameJapanese = model.NameJapanese;
@@ -308,12 +318,12 @@ namespace PmxSharp
 
                 o.transform.SetParent(meshRoot);
             }*/
-            
+
             Texture2D[] textures = new Texture2D[model.TexturePaths.Length];
-            for(int i = 0; i < textures.Length; ++i)
+            for (int i = 0; i < textures.Length; ++i)
             {
                 string path = Path.Combine(Path.GetDirectoryName(model.FilePath), model.TexturePaths[i]);
-                if(File.Exists(path))
+                if (File.Exists(path))
                 {
                     textures[i] = LoadTexture(path);
                 }
@@ -369,6 +379,193 @@ namespace PmxSharp
 
             component.MeshRoot = meshRoot;
             component.SkeletonRoot = skeletonRoot;
+            return root;
+        }
+
+        /// <summary>
+        /// Loads a PMX model that's combined into a single mesh.
+        /// </summary>
+        public static GameObject LoadCombined(this PmxModel model, GameObject bonePrefab)
+        {
+            SceneModel comp = SceneModel.Create(model.Name);
+            GameObject root = comp.gameObject;
+            GameObject meshRoot = comp.MeshRoot.gameObject;
+            Transform boneRoot = comp.SkeletonRoot;
+
+            #region Skeleton
+            Transform[] bones = new Transform[model.Bones.Length];
+
+            // First pass - create bones and copy properties
+            PmxBoneBehaviour leftShoulder = null;
+            PmxBoneBehaviour rightShoulder = null;
+            for (int i = 0; i < bones.Length; ++i)
+            {
+                // Create bone
+                PmxBone original = model.Bones[i];
+                GameObject bone = GameObject.Instantiate<GameObject>(bonePrefab);
+                PmxBoneBehaviour c = bone.GetComponent<PmxBoneBehaviour>();
+                Transform t = bone.transform;
+
+                // Copy properties
+                c.Name = original.Name;
+                bone.name = original.Name;
+                t.position = original.Position * Scale;
+                c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
+
+                c.Tail = original.HasFlag(PmxBoneFlags.TailIsIndex) ? PmxBoneBehaviour.TailType.Bone : PmxBoneBehaviour.TailType.Vector;
+                if ((c.Tail == PmxBoneBehaviour.TailType.Vector && original.TailPosition.magnitude <= 0) || (c.Tail == PmxBoneBehaviour.TailType.Bone && original.TailIndex < 0))
+                {
+                    c.Tail = PmxBoneBehaviour.TailType.None;
+                }
+
+                if (c.Tail == PmxBoneBehaviour.TailType.Vector)
+                    c.TailPosition = original.TailPosition * Scale;
+
+                c.Flags = 0;
+                if (original.HasFlag(PmxBoneFlags.Rotation))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Rotation;
+                if (original.HasFlag(PmxBoneFlags.Translation))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Translation;
+                if (original.HasFlag(PmxBoneFlags.Visible))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Visible;
+                if (original.HasFlag(PmxBoneFlags.FixedAxis))
+                    c.Flags |= PmxBoneBehaviour.BoneFlags.Twist;
+
+                c.UpdateSprite();
+
+                bones[i] = bone.transform;
+
+                if (leftShoulder == null && c.Name == "左腕")
+                {
+                    //leftShoulder = model.Bones[i];
+                    leftShoulder = c;
+                    Log.Trace("Found left shoulder");
+                }
+                else if (rightShoulder == null && c.Name == "右腕")
+                {
+                    //rightShoulder = model.Bones[i];
+                    rightShoulder = c;
+                    Log.Trace("Found right shoulder");
+                }
+            }
+
+            // Second pass - set up bone hierarchy and tails
+            for (int i = 0; i < bones.Length; ++i)
+            {
+                PmxBone original = model.Bones[i];
+                PmxBoneBehaviour bone = bones[i].GetComponent<PmxBoneBehaviour>();
+
+                bone.transform.SetParent(original.ParentIndex < 0 ? boneRoot : bones[original.ParentIndex]);
+                if (bone.Tail == PmxBoneBehaviour.TailType.Bone)
+                {
+                    bone.TailBone = bones[original.TailIndex];
+                }
+            }
+
+            // Final pass - reorient arm and custom axis bones
+            if (leftShoulder != null)
+            {
+                foreach (PmxBoneBehaviour bone in leftShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
+                {
+                    bone.transform.Reorient(Quaternion.Euler(0, 0, 45) * Quaternion.Euler(0, 0, -90));
+                }
+            }
+            if (rightShoulder != null)
+            {
+                foreach (PmxBoneBehaviour bone in rightShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
+                {
+                    bone.transform.Reorient(Quaternion.Euler(0, 0, -45) * Quaternion.Euler(0, 0, -90));
+                }
+            }
+            #endregion
+
+            #region Mesh
+            Mesh baseMesh = new Mesh();
+            CombineInstance[] combine = new CombineInstance[model.Materials.Length];
+
+            baseMesh.vertices = PmxVertex.GetPositions(model.Vertices, Scale);
+            baseMesh.uv = PmxVertex.GetUVs(model.Vertices);
+            baseMesh.normals = PmxVertex.GetNormals(model.Vertices);
+
+            baseMesh.subMeshCount = model.Materials.Length;
+
+            for(int i = 0; i < model.Materials.Length; ++i)
+            {
+                PmxMaterial mat = model.Materials[i];
+                PmxSurface[] faces = mat.GetSurfaces(model.Surfaces);
+                List<int> indices = new List<int>();
+                foreach(PmxSurface s in faces)
+                {
+                    indices.Add(s.Vertex0);
+                    indices.Add(s.Vertex1);
+                    indices.Add(s.Vertex2);
+                }
+                baseMesh.SetTriangles(indices, i);
+            }
+
+            baseMesh.boneWeights = PmxVertex.GetBoneWeights(PmxVertex.GetDeforms(model.Vertices));
+            #endregion
+
+            #region Materials
+
+            Texture2D[] textures = new Texture2D[model.TexturePaths.Length];
+            for (int i = 0; i < textures.Length; ++i)
+            {
+                string path = Path.Combine(Path.GetDirectoryName(model.FilePath), model.TexturePaths[i]);
+                if (File.Exists(path))
+                {
+                    textures[i] = LoadTexture(path);
+                }
+                else
+                {
+                    textures[i] = new Texture2D(2, 2);
+                    textures[i].SetPixels(new Color[] { Color.magenta, Color.magenta, Color.magenta, Color.magenta });
+                }
+            }
+
+            Material[] materials = new Material[model.Materials.Length];
+            for (int i = 0; i < materials.Length; ++i)
+            {
+                Material mat = new Material(Shader.Find("Standard"));
+                PmxMaterial pmxMat = model.Materials[i];
+
+                mat.color = pmxMat.Diffuse;
+                if (pmxMat.TextureIndex >= 0)
+                {
+                    mat.mainTexture = textures[pmxMat.TextureIndex];
+                }
+
+                materials[i] = mat;
+            }
+
+            #endregion
+
+            #region Components
+#if STATIC_MESH
+
+            // Static mesh renderer
+            MeshFilter mf = meshRoot.AddComponent<MeshFilter>();
+            mf.sharedMesh = baseMesh;
+            MeshRenderer mr = meshRoot.AddComponent<MeshRenderer>();
+            mr.sharedMaterials = materials;
+#else
+            // Skinned mesh renderer
+            SkinnedMeshRenderer smr = meshRoot.AddComponent<SkinnedMeshRenderer>();
+            smr.sharedMesh = baseMesh;
+            smr.sharedMaterials = materials;
+            smr.updateWhenOffscreen = true;
+
+            smr.rootBone = meshRoot.transform;
+            smr.bones = bones;
+            List<Matrix4x4> bp = new List<Matrix4x4>();
+            foreach (Transform bone in bones)
+            {
+                bp.Add(bone.worldToLocalMatrix);
+            }
+            baseMesh.bindposes = bp.ToArray();
+#endif
+            #endregion
+
             return root;
         }
     }
