@@ -16,6 +16,7 @@ namespace MUPS
         public static Color ModifiedColor = new Color(0, 1, 0);
 
         public string Name = "Bone";
+        public int Index = 0;
         public BoneFlags Flags { get; set; } = BoneFlags.Rotation | BoneFlags.Visible;
         public bool Modified = false;
 

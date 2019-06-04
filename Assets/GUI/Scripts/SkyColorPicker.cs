@@ -4,12 +4,25 @@ using UnityEngine.Events;
 
 public class SkyColorPicker : MonoBehaviour
 {
-    public Slider SHSlider, SSSlider, SVSlider;
-    public Slider AHSlider, ASSlider, AVSlider;
-    public Image SHImage, SSImage, SVImage;
-    public Image AHImage, ASImage, AVImage;
-    public InputField SIField, AIField;
+    [Header("Sky color inputs")]
+    public Slider SHSlider;
+    public Slider SSSlider;
+    public Slider SVSlider;
+    public InputField SIField;
+    [Header("Ambient color inputs")]
+    public Slider AHSlider;
+    public Slider ASSlider;
+    public Slider AVSlider;
+    public InputField AIField;
     public Slider SpecularSlider;
+    [Header("Slider images")]
+    public Image SHImage;
+    public Image SSImage;
+    public Image SVImage;
+    public Image AHImage;
+    public Image ASImage;
+    public Image AVImage;
+    [Header("References")]
     public Light Skylight;
 
     public ModalWindow Window;

@@ -61,6 +61,8 @@ public class LightColorPicker : MonoBehaviour
                 _light.Light.type = LightType.Directional;
                 break;
         }
+
+        UpdatePreview(h, s, v);
     }
 
     public void UpdateLight(string html)
@@ -95,6 +97,8 @@ public class LightColorPicker : MonoBehaviour
                 _light.Light.type = LightType.Directional;
                 break;
         }
+
+        UpdatePreview(h, s, v);
     }
 
     public void RevertLight()
@@ -112,6 +116,16 @@ public class LightColorPicker : MonoBehaviour
         AngleSlider.gameObject.SetActive(type == 1);
         RangeField.gameObject.SetActive(type != 2);
         UpdateLight();
+    }
+
+    public void UpdatePreview(float h, float s, float v)
+    {
+        //HueHandle.color = Color.HSVToRGB(HueSlider.value, 1, 1);
+        //SatHandle.color = Color.HSVToRGB(HueSlider.value, SatSlider.value, 1);
+        //ValHandle.color = Color.HSVToRGB(1, 0, ValSlider.value);
+        HueHandle.color = Color.HSVToRGB(h, 1, 1);
+        SatHandle.color = Color.HSVToRGB(h, s, 1);
+        ValHandle.color = Color.HSVToRGB(0, 0, v);
     }
 
     public void Show(SceneLight light)

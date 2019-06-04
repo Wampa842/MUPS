@@ -142,16 +142,16 @@ namespace PmxSharp
         /// <summary>
         /// Converts a PMX model to a Unity object.
         /// </summary>
-        public static GameObject Load(this PmxModel model, GameObject bonePrefab)
+        public static GameObject Load(this PmxModel model)
         {
-            return model.LoadCombined(bonePrefab);
+            return model.LoadCombined();
         }
 
         /// <summary>
         /// Loads a PMX model with materials as separate meshes.
         /// </summary>
         [Obsolete("This method is obsolete because making morphs work with multiple meshes is borderline impossible. Same amount of draw calls anyway. Use LoadCombined.")]
-        public static GameObject LoadSeparate(this PmxModel model, GameObject bonePrefab)
+        public static GameObject LoadSeparate(this PmxModel model)
         {
             // Model root
             GameObject root = new GameObject(model.NameJapanese);
@@ -175,7 +175,7 @@ namespace PmxSharp
             {
                 // Create bone
                 PmxBone original = model.Bones[i];
-                GameObject bone = GameObject.Instantiate<GameObject>(bonePrefab);
+                GameObject bone = GameObject.Instantiate<GameObject>(SceneController.Instance.BonePrefab);
                 PmxBoneBehaviour c = bone.GetComponent<PmxBoneBehaviour>();
                 Transform t = bone.transform;
 
@@ -385,7 +385,7 @@ namespace PmxSharp
         /// <summary>
         /// Loads a PMX model that's combined into a single mesh.
         /// </summary>
-        public static GameObject LoadCombined(this PmxModel model, GameObject bonePrefab)
+        public static GameObject LoadCombined(this PmxModel model)
         {
             SceneModel comp = SceneModel.Create(model.Name);
             GameObject root = comp.gameObject;
@@ -402,12 +402,13 @@ namespace PmxSharp
             {
                 // Create bone
                 PmxBone original = model.Bones[i];
-                GameObject bone = GameObject.Instantiate<GameObject>(bonePrefab);
+                GameObject bone = GameObject.Instantiate<GameObject>(SceneController.Instance.BonePrefab);
                 PmxBoneBehaviour c = bone.GetComponent<PmxBoneBehaviour>();
                 Transform t = bone.transform;
 
                 // Copy properties
                 c.Name = original.Name;
+                c.Index = original.Index;
                 bone.name = original.Name;
                 t.position = original.Position * Scale;
                 c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
@@ -489,12 +490,12 @@ namespace PmxSharp
 
             baseMesh.subMeshCount = model.Materials.Length;
 
-            for(int i = 0; i < model.Materials.Length; ++i)
+            for (int i = 0; i < model.Materials.Length; ++i)
             {
                 PmxMaterial mat = model.Materials[i];
                 PmxSurface[] faces = mat.GetSurfaces(model.Surfaces);
                 List<int> indices = new List<int>();
-                foreach(PmxSurface s in faces)
+                foreach (PmxSurface s in faces)
                 {
                     indices.Add(s.Vertex0);
                     indices.Add(s.Vertex1);
@@ -536,6 +537,18 @@ namespace PmxSharp
                 }
 
                 materials[i] = mat;
+            }
+
+            #endregion
+
+            #region Morphs
+
+            PmxMorph[] morphs = model.Morphs.Where(m => m.Type == PmxMorphType.Vertex).ToArray();
+            comp.VertexMorphs = new VertexMorph[morphs.Length];
+
+            for (int i = 0; i < morphs.Length; ++i)
+            {
+                comp.VertexMorphs[i] = new VertexMorph(morphs[i], baseMesh, Scale);
             }
 
             #endregion

@@ -99,6 +99,11 @@ namespace MUPS
 
             return r.ToString("X2") + g.ToString("X2") + b.ToString("X2") + a.ToString("X2");
         }
+
+        public static Color RandomColor()
+        {
+            return new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value, 1.0f);
+        }
     }
 
     public static class Layers
@@ -110,6 +115,7 @@ namespace MUPS
 
     public static class Log
     {
+        public static System.Diagnostics.Process LogConsole { get; set; }
         public static string LogPath { get; } = Path.Combine(Application.persistentDataPath, "mups.log");
         public static bool LogWriteFailed { get; private set; } = false;
 
@@ -118,6 +124,11 @@ namespace MUPS
 
         public static void WriteLog(string line)
         {
+            if(LogConsole != null)
+            {
+                LogConsole.StandardInput.WriteLine(line);
+            }
+
             if (LogWriteFailed)
                 return;
 
@@ -137,6 +148,33 @@ namespace MUPS
                 writer.Close();
             }
 
+        }
+
+        public static void Write(LogLevel level, params object[] message)
+        {
+            switch (level)
+            {
+                case LogLevel.Trace:
+                    Trace(message);
+                    break;
+                case LogLevel.Debug:
+                    Debug(message);
+                    break;
+                case LogLevel.Info:
+                    Info(message);
+                    break;
+                case LogLevel.Warning:
+                    Warning(message);
+                    break;
+                case LogLevel.Error:
+                    Error(message);
+                    break;
+                case LogLevel.Fatal:
+                    Error(message);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public static void Trace(params object[] message)

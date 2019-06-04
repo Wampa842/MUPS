@@ -15,22 +15,20 @@ namespace MUPS
         // Singleton
         public static SceneController Instance { get; private set; }
 
-        // References
+        [Header("References")]
         public Transform ModelListContent = null;                       // Container panel that holds the model list buttons
         public Button ToggleLocalButton = null;                         // Button that cycles the reference coordinate system
         private Button _cameraButton = null;                            // Model list button that selects "nothing" in the scene
         public Transform AxisGizmo = null;                              // Axis marker gizmo
+        public List<SceneObject> SceneModels = null;     // List of models in the scene
+        public SceneObject SelectedModel = null;
+        public PmxBoneBehaviour SelectedBone = null;
 
-        // Prefabs
+        [Header("Prefabs")]
         private GameObject _modelListButton;                    // Base model list button
         private GameObject _modelListLightButton;               // Light object list button
         private GameObject _testModel;                          // Simple model for quick testing purposes
         public GameObject BonePrefab;                           // Bone object prefab
-
-        //public bool Local = true;                              // Reference coordinate system
-        public List<SceneObject> SceneModels = null;     // List of models in the scene
-        public SceneObject SelectedModel = null;
-        public PmxBoneBehaviour SelectedBone = null;
 
         #region Scene management
         public void FindModels()
@@ -104,7 +102,7 @@ namespace MUPS
             if (!string.IsNullOrEmpty(path))
             {
                 PmxImporter import = new PmxImporter(path);
-                GameObject model = import.Import().Load(BonePrefab);
+                GameObject model = import.Import().Load();
                 model.transform.SetParent(transform);
                 SceneObject comp = model.GetComponent<SceneObject>();
                 foreach (Transform bone in comp.SkeletonRoot)
@@ -160,7 +158,10 @@ namespace MUPS
                 SelectBone(model.LastSelectedBone);
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
                 SelectedModel.SetBonesInteractive(true);
+                SelectedModel.OnSelected.Invoke();
             }
+
+            ModelInfoController.Instance.ReadModelInfo(model);
         }
 
         public void EditSelected()

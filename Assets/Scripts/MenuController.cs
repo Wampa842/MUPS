@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MUPS.UI
 {
-    class MenuController : MonoBehaviour
+    public class MenuController : MonoBehaviour
     {
         public enum DirectoryType { Config }
         public void OpenDirectory(int type)
@@ -24,6 +24,16 @@ namespace MUPS.UI
                 default:
                     break;
             }
+        }
+
+        public void Exit()
+        {
+            Application.Quit(0);
+        }
+
+        public void ToggleFullscreen()
+        {
+            
         }
     }
 }
