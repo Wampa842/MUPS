@@ -9,16 +9,32 @@ namespace MUPS
         public enum TailType { None, Bone, Vector }
         [Flags]
         public enum BoneFlags { Rotation = 1, Translation = 2, Visible = 4, Twist = 8 }
+        public enum SpecialBoneType { None, LeftArm, RightArm }
 
         public static float Radius = 0.1f;
         public static Color NormalColor = new Color(0, 0, 1);
         public static Color SelectedColor = new Color(1, 0, 0);
         public static Color ModifiedColor = new Color(0, 1, 0);
 
-        public string Name = "Bone";
+        public string NameEnglish = "Bone";
+        public string NameJapanese = "Bone";
+        public string Name
+        {
+            get
+            {
+                if (SceneObject.PreferJapaneseText)
+                    return string.IsNullOrEmpty(NameJapanese) ? NameEnglish : NameJapanese;
+                else
+                    return string.IsNullOrEmpty(NameEnglish) ? NameJapanese : NameEnglish;
+            }
+        }
         public int Index = 0;
         public BoneFlags Flags { get; set; } = BoneFlags.Rotation | BoneFlags.Visible;
         public bool Modified = false;
+        public SpecialBoneType SpecialBone = SpecialBoneType.None;
+        public Vector3 DefaultLocalPosition = Vector3.zero;
+        public Quaternion DefaultRotation = Quaternion.identity;
+        public PmxBoneBehaviour InflictSource;
 
         public SphereCollider Collider = null;
         public Transform SpriteHolder = null;
@@ -68,7 +84,7 @@ namespace MUPS
             {
                 SetSprite(ViewController.Instance.TwistBoneSprite);
             }
-            else if(HasFlag(BoneFlags.Translation))
+            else if (HasFlag(BoneFlags.Translation))
             {
                 SetSprite(ViewController.Instance.TranslateBoneSprite);
             }
@@ -76,6 +92,12 @@ namespace MUPS
             {
                 SetSprite(ViewController.Instance.RotateBoneSprite);
             }
+        }
+
+        public void ResetBone()
+        {
+            transform.localPosition = DefaultLocalPosition;
+            transform.localRotation = DefaultRotation;
         }
 
         #region Interactivity

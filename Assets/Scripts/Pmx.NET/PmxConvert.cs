@@ -102,9 +102,9 @@ namespace PmxSharp
         {
             int w = tex.width;
             int h = tex.height;
-            for(int y = 0; y < h; ++y)
+            for (int y = 0; y < h; ++y)
             {
-                for(int x = 0; x < w; ++x)
+                for (int x = 0; x < w; ++x)
                 {
                     if (tex.GetPixel(x, y).a < threshold)
                         return true;
@@ -116,7 +116,7 @@ namespace PmxSharp
 
     public static class PmxConvert
     {
-        public static float Scale { get; } = 0.33333f;
+        public static float Scale { get; } = 1;
 
         /// <summary>
         /// Loads a texture from the specified file path.
@@ -180,7 +180,8 @@ namespace PmxSharp
                 Transform t = bone.transform;
 
                 // Copy properties
-                c.Name = original.Name;
+                c.NameEnglish = original.NameEnglish;
+                c.NameJapanese = original.NameJapanese;
                 bone.name = original.Name;
                 t.position = original.Position * Scale;
                 c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
@@ -208,13 +209,13 @@ namespace PmxSharp
 
                 bones[i] = bone.transform;
 
-                if (leftShoulder == null && c.Name == "左腕")
+                if (leftShoulder == null && c.NameJapanese == "左腕")
                 {
                     //leftShoulder = model.Bones[i];
                     leftShoulder = c;
                     Log.Trace("Found left shoulder");
                 }
-                else if (rightShoulder == null && c.Name == "右腕")
+                else if (rightShoulder == null && c.NameJapanese == "右腕")
                 {
                     //rightShoulder = model.Bones[i];
                     rightShoulder = c;
@@ -292,33 +293,6 @@ namespace PmxSharp
             #endregion
             #region Mesh Renderer
 
-            // Create objects and components
-            /*
-            for (int i = 0; i < meshes.Length; ++i)
-            {
-                Mesh mesh = meshes[i];
-                GameObject o = new GameObject(mesh.name);
-                MeshFilter mf = o.AddComponent<MeshFilter>();
-                mf.sharedMesh = mesh;
-                MeshRenderer mr = o.AddComponent<MeshRenderer>();
-
-                PmxMaterial pmxMat = model.Materials[i];
-                Material mat = new Material(Shader.Find("Standard"));
-                mr.sharedMaterial = mat;
-
-                mat.color = pmxMat.Diffuse;
-                if (pmxMat.TextureIndex >= 0)
-                {
-                    string path = Path.Combine(Path.GetDirectoryName(model.FilePath), model.TexturePaths[pmxMat.TextureIndex]);
-                    if (File.Exists(path))
-                    {
-                        mat.mainTexture = LoadTexture(path);
-                    }
-                }
-
-                o.transform.SetParent(meshRoot);
-            }*/
-
             Texture2D[] textures = new Texture2D[model.TexturePaths.Length];
             for (int i = 0; i < textures.Length; ++i)
             {
@@ -394,6 +368,7 @@ namespace PmxSharp
 
             #region Skeleton
             Transform[] bones = new Transform[model.Bones.Length];
+            List<PmxBone> iks = new List<PmxBone>();
 
             // First pass - create bones and copy properties
             PmxBoneBehaviour leftShoulder = null;
@@ -405,14 +380,23 @@ namespace PmxSharp
                 GameObject bone = GameObject.Instantiate<GameObject>(SceneController.Instance.BonePrefab);
                 PmxBoneBehaviour c = bone.GetComponent<PmxBoneBehaviour>();
                 Transform t = bone.transform;
+                if (original.HasFlag(PmxBoneFlags.IK))
+                    iks.Add(original);
 
                 // Copy properties
-                c.Name = original.Name;
+                c.NameEnglish = original.NameEnglish;
+                c.NameJapanese = original.NameJapanese;
                 c.Index = original.Index;
                 bone.name = original.Name;
                 t.position = original.Position * Scale;
                 c.Interactive = original.HasFlag(PmxBoneFlags.Visible);
 
+                if (original.HasFlag(PmxBoneFlags.FixedAxis))
+                {
+                    t.rotation = Quaternion.Euler(original.FixedAxis);
+                }
+
+                // Set up visuals
                 c.Tail = original.HasFlag(PmxBoneFlags.TailIsIndex) ? PmxBoneBehaviour.TailType.Bone : PmxBoneBehaviour.TailType.Vector;
                 if ((c.Tail == PmxBoneBehaviour.TailType.Vector && original.TailPosition.magnitude <= 0) || (c.Tail == PmxBoneBehaviour.TailType.Bone && original.TailIndex < 0))
                 {
@@ -436,13 +420,13 @@ namespace PmxSharp
 
                 bones[i] = bone.transform;
 
-                if (leftShoulder == null && c.Name == "左腕")
+                if (leftShoulder == null && c.NameJapanese == "左腕")
                 {
                     //leftShoulder = model.Bones[i];
                     leftShoulder = c;
                     Log.Trace("Found left shoulder");
                 }
-                else if (rightShoulder == null && c.Name == "右腕")
+                else if (rightShoulder == null && c.NameJapanese == "右腕")
                 {
                     //rightShoulder = model.Bones[i];
                     rightShoulder = c;
@@ -457,27 +441,52 @@ namespace PmxSharp
                 PmxBoneBehaviour bone = bones[i].GetComponent<PmxBoneBehaviour>();
 
                 bone.transform.SetParent(original.ParentIndex < 0 ? boneRoot : bones[original.ParentIndex]);
+                bone.DefaultLocalPosition = bone.transform.localPosition;
                 if (bone.Tail == PmxBoneBehaviour.TailType.Bone)
                 {
                     bone.TailBone = bones[original.TailIndex];
                 }
             }
 
-            // Final pass - reorient arm and custom axis bones
+            // Reorient arm and custom axis bones
             if (leftShoulder != null)
             {
                 foreach (PmxBoneBehaviour bone in leftShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
                 {
-                    bone.transform.Reorient(Quaternion.Euler(0, 0, 45) * Quaternion.Euler(0, 0, -90));
+                    Quaternion rot = Quaternion.Euler(0, 0, 45) * Quaternion.Euler(0, 0, -90);
+                    bone.DefaultRotation = rot;
+                    bone.transform.Reorient(rot);
+                    bone.SpecialBone = PmxBoneBehaviour.SpecialBoneType.LeftArm;
                 }
             }
             if (rightShoulder != null)
             {
                 foreach (PmxBoneBehaviour bone in rightShoulder.GetComponentsInChildren<PmxBoneBehaviour>())
                 {
-                    bone.transform.Reorient(Quaternion.Euler(0, 0, -45) * Quaternion.Euler(0, 0, -90));
+                    Quaternion rot = Quaternion.Euler(0, 0, -45) * Quaternion.Euler(0, 0, -90);
+                    bone.DefaultRotation = rot;
+                    bone.transform.Reorient(rot);
+                    bone.SpecialBone = PmxBoneBehaviour.SpecialBoneType.RightArm;
                 }
             }
+
+            // Set up IK bones - only two-bone IK chains are supported.
+            Avatar avatar;
+            if(iks.Count > 0)
+            {
+                avatar = AvatarBuilder.BuildGenericAvatar()
+            }
+
+            foreach(PmxBone bone in iks)
+            {
+                if (bone.IK.Links.Length != 2)
+                    Log.Warning($"The IK chain \"{bone.Name}\" contains {bone.IK.Links.Length} links. Only two links are supported.");
+            }
+
+            #endregion
+
+            #region Physics
+
             #endregion
 
             #region Mesh
@@ -553,7 +562,7 @@ namespace PmxSharp
 
             #endregion
 
-            #region Components
+            #region Renderer
 #if STATIC_MESH
 
             // Static mesh renderer

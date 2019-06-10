@@ -38,6 +38,8 @@ namespace MUPS
         private bool _ctrl;                 // Left/right control
         private bool _alt;                  // Left alt
 
+        private bool _bonesShown = true;
+
         // Global control access
         public float MovementMultiplier { get { return (_shift ? 3 : 1) * (_ctrl ? 0.33f : 1); } }
 
@@ -163,6 +165,12 @@ namespace MUPS
                         SceneController.Instance.SelectBone(hit.transform.GetComponent<PmxBoneBehaviour>());
                     }
                 }
+            }
+
+            // Toggle bone visibility
+            if(Settings.Current.Keyboard.ToggleBoneVisible.Down())
+            {
+                SceneController.Instance.SelectedModel.SetBonesInteractive(_bonesShown = !_bonesShown);
             }
 
             // Reset camera

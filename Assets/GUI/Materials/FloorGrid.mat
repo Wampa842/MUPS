@@ -65,7 +65,7 @@ Material:
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Grid1Size: 0.5
-    - _Grid1Thickness: 0.02
+    - _Grid1Thickness: 0.0147
     - _Grid2Size: 2.5
     - _Grid2Thickness: 0.0124
     - _GridSize: 0.5

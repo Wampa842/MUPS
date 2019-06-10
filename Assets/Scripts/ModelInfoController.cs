@@ -59,6 +59,7 @@ namespace MUPS.UI
 
         public void ReadMorphs(SceneObject obj)
         {
+            Log.Trace("\nSHOWN:\n" + Environment.StackTrace);
             if (obj == null)
             {
                 SceneModel.HideAllMorphLists();
@@ -68,9 +69,11 @@ namespace MUPS.UI
             if (obj is SceneModel)
             {
                 SceneModel model = (SceneModel)obj;
+                model.MorphSliders = new MorphSlider[model.VertexMorphs.Length];
 
-                foreach (VertexMorph morph in model.VertexMorphs)
+                for(int i = 0; i < model.VertexMorphs.Length; ++i)
                 {
+                    VertexMorph morph = model.VertexMorphs[i];
                     GameObject s = Instantiate<GameObject>(MorphSliderPrefab);
                     MorphSlider c = s.GetComponent<MorphSlider>();
 
@@ -96,17 +99,14 @@ namespace MUPS.UI
                         default:
                             break;
                     }
+
+                    model.MorphSliders[i] = c;
                 }
             }
         }
 
         public void ReadBones(SceneObject obj)
         {
-            if (obj == null)
-            {
-                SceneObject.HideAllBoneButtons();
-                return;
-            }
 
             PmxBoneBehaviour[] bones = obj.SkeletonRoot.GetComponentsInChildren<PmxBoneBehaviour>();
             Array.Sort<PmxBoneBehaviour>(bones, (a, b) => a.Index.CompareTo(b.Index));

@@ -150,18 +150,20 @@ namespace MUPS
                 _cameraButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
                 AxisGizmo.SetParent(transform);
                 AxisGizmo.gameObject.SetActive(false);
+                SceneObject.HideAllBoneButtons();
+                SceneModel.HideAllMorphLists();
             }
             else
             {
                 Log.Trace($"Selected {model.DisplayName}");
                 SelectedModel = model;
-                SelectBone(model.LastSelectedBone);
                 SelectedModel.ListButton.transform.Find("SelectedIcon").GetComponent<Text>().enabled = true;
                 SelectedModel.SetBonesInteractive(true);
+                SelectBone(model.LastSelectedBone);
                 SelectedModel.OnSelected.Invoke();
             }
 
-            ModelInfoController.Instance.ReadModelInfo(model);
+            //ModelInfoController.Instance.ReadModelInfo(model);
         }
 
         public void EditSelected()
@@ -201,6 +203,14 @@ namespace MUPS
             screenGizmo.localPosition = Vector3.zero;
 
             Log.Trace(string.Format("Selected bone {0}", SelectedBone.Name));
+        }
+        
+        public void ResetSelectedBone()
+        {
+            if(SelectedBone != null)
+            {
+                SelectedBone.ResetBone();
+            }
         }
         #endregion
 

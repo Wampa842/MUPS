@@ -71,6 +71,33 @@ namespace MUPS
             }
         }
 
+        public PmxBoneBehaviour BoneMirrorByName(PmxBoneBehaviour bone)
+        {
+            // The Japanese name's first character marks the side.
+            string name = bone.NameJapanese.Substring(1);
+            switch (bone.NameJapanese[0])
+            {
+                case '左':
+                    return Array.Find(SkeletonRoot.GetComponentsInChildren<PmxBoneBehaviour>(), c => c.NameJapanese == '右' + name);
+                case '右':
+                    return Array.Find(SkeletonRoot.GetComponentsInChildren<PmxBoneBehaviour>(), c => c.NameJapanese == '左' + name);
+                default:
+                    return bone;
+            }
+        }
+
+        public PmxBoneBehaviour[] BoneMirrorByName(PmxBoneBehaviour[] bones)
+        {
+            List<PmxBoneBehaviour> mirrors = new List<PmxBoneBehaviour>();
+            foreach(PmxBoneBehaviour bone in bones)
+            {
+                PmxBoneBehaviour m = BoneMirrorByName(bone);
+                if (m != null)
+                    mirrors.Add(m);
+            }
+            return mirrors.ToArray();
+        }
+
         public void SetBonesInteractive(bool interactive)
         {
             foreach (PmxBoneBehaviour bone in GetComponentsInChildren<PmxBoneBehaviour>())
@@ -85,13 +112,14 @@ namespace MUPS
             }
         }
 
-        protected void Awake()
+        protected virtual void Awake()
         {
             OnSelected = new UnityEvent();
         }
 
         protected virtual void Start()
         {
+            UI.ModelInfoController.Instance.ReadModelInfo(this);
             OnSelected.AddListener(ShowBoneButtons);
         }
 

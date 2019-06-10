@@ -77,6 +77,9 @@ namespace MUPS
 
         public void HideMorphList()
         {
+            if (MorphSliders == null || MorphSliders.Length <= 0)
+                return;
+
             foreach (UI.MorphSlider slider in MorphSliders)
             {
                 slider.gameObject.SetActive(false);
@@ -105,10 +108,15 @@ namespace MUPS
             base.Start();
 
             OnSelected.AddListener(ShowMorphList);
-
-            UI.ModelInfoController.Instance.ReadMorphs(this);
             _mesh = GetComponentInChildren<SkinnedMeshRenderer>().sharedMesh;
             _baseMesh = (Vector3[])_mesh.vertices.Clone();
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            
         }
 
         public static new SceneModel Create(string name, bool withBone = false)

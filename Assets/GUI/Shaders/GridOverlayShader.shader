@@ -12,9 +12,11 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Overlay" }
+		Tags { "Queue"="Background" }
 		LOD 100
 		Cull Off
+		ZWrite On
+		ZTest Less
 
 		Pass
 		{

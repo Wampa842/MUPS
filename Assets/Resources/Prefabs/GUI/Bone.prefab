@@ -46,9 +46,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b503f2898ecb4b040a6fa4d969d601b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Name: Bone0
+  NameEnglish: Bone
+  NameJapanese: Bone
   Index: 0
   Modified: 0
+  SpecialBone: 0
+  DefaultLocalPosition: {x: 0, y: 0, z: 0}
+  DefaultRotation: {x: 0, y: 0, z: 0, w: 1}
+  InflictSource: {fileID: 0}
   Collider: {fileID: 36}
   SpriteHolder: {fileID: 29}
   TailHolder: {fileID: 30}

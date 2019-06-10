@@ -195,6 +195,7 @@ namespace MUPS.SaveData
         // Manipulation controls
         public KeyBinding SelectObject { get; set; }
         public KeyBinding ToggleLocal { get; set; }
+        public KeyBinding ToggleBoneVisible { get; set; }
         public KeyBinding ResetCamera { get; set; }
         public KeyBinding LoadCameraState { get; set; }
         public KeyBinding RegisterState { get; set; }
@@ -217,6 +218,7 @@ namespace MUPS.SaveData
 
             SelectObject = new KeyBinding(KeyCode.Mouse0, KeyCode.LeftControl);
             ToggleLocal = new KeyBinding(KeyCode.G);
+            ToggleBoneVisible = new KeyBinding(KeyCode.C);
             ResetCamera = new KeyBinding(KeyCode.R, KeyCode.LeftControl, KeyCode.RightControl);
             LoadCameraState = new KeyBinding(KeyCode.R, KeyCode.LeftShift, KeyCode.RightShift);
             RegisterState = new KeyBinding(KeyCode.Return);
